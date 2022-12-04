@@ -5,15 +5,20 @@
 #website="https://www.ncei.noaa.gov/data/global-forecast-system/access/grid-004-0.5-degree/forecast"
  website="https://www.ncei.noaa.gov/data/global-forecast-system/access/grid-004-0.5-degree/analysis"
 #website="https://www.ncei.noaa.gov/data/global-forecast-system/access/grid-003-1.0-degree/analysis"
-#website="https://www.ncei.noaa.gov/data/global-forecast-system/access/grid-003-1.0-degree/analysis/202008/20200801/gfs_3_20200801_0000_000.grb2
+ 
+ datadir=/work2/noaa/gsienkf/weihuang/gfs/data
 
- year=2021
+ cd ${datadir}
+
+ year=2022
 #month=10
-#month=01
+ month=01
 #month=04
- month=07
+#month=07
 
  ym=$year$month
+
+#echo "Start at " `date` > ${datadir}/history.log
 
  d=0
  while [ $d -lt 31 ]
@@ -39,4 +44,6 @@
      wget $dataname
    done
  done
+
+#echo "End at " `date` >> ${datadir}/history.log
 

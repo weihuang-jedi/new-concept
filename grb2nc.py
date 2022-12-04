@@ -6,13 +6,11 @@ import numpy as np
 
 #-------------------------------------------------------------------------------------------
 class Grb2NC():
-  def __init__(self, debug=0, outfilename='my.nc'):
+  def __init__(self, debug=0):
     self.debug = debug
-    self.outfilename = outfilename
 
     if(self.debug):
       print('debug = ', debug)
-      print('outfilename = ', outfilename)
 
   def process_file(self, infilename=None):
     if(not os.path.isfile(infilename)):
@@ -21,11 +19,14 @@ class Grb2NC():
       
     print('Processing file: ', infilename)
 
-    ds_in=xr.open_dataset(infilename)
+   #path, flnm = os.path.split(infilename)
+   #outfilename ='%s/my.nc' %(flnm)
 
-    if(self.outfilename is None):
-      path, flnm = os.path.split(infilename)
-      self.outfilename ='%s/my.nc' %(flnm)
+    outfilename = infilename.replace('grb2', 'nc4')
+   #print('infilename = ', infilename)
+    print('\toutfilename = ', outfilename)
+
+    ds_in=xr.open_dataset(infilename)
 
    #output grid
     lon1d=np.arange(0,360,1.0)
@@ -82,35 +83,34 @@ class Grb2NC():
 if __name__ == '__main__':
   debug = 1
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/'
-  outfilename = 'my.nc'
 
-  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'outfilename='])
+  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir='])
 
   for o, a in opts:
     if o in ('--debug'):
       debug = int(a)
     elif o in ('--datadir'):
       datadir = a
-    elif o in ('--outfilename'):
-      outfilename = a
    #else:
    #  assert False, 'unhandled option'
 
   print('debug = ', debug)
   print('datadir = ', datadir)
-  print('outfilename = ', outfilename)
 
  #open input file to get input grid
  #files=glob.glob('ocn_????_??_??.nc')
   files=glob.glob(datadir + 'gfs_4_????????_??00_000.grb2')
   files.sort()
 
-  print('files = ', files)
+ #print('files = ', files)
 
-  g2n = Grb2NC(debug=debug, outfilename=outfilename)
+  g2n = Grb2NC(debug=debug)
 
   for infile in files:
     print('Processing:', infile)
+   #path, flnm = os.path.split(infile)
+   #outfilename = infile.replace('grb2', 'nc4')
+   #print('infilename = ', infile)
+   #print('outfilename = ', outfilename)
+    g2n.process_file(infilename=infile)
 
-   #g2n.process_file(infilename=infile)
-    sys.exit(-1)
