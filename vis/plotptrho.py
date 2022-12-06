@@ -41,20 +41,30 @@ class GeneratePlot():
    #axs is a 2 dimensional array of `GeoAxes`. Flatten it into a 1-D array
    #axs=axs.flatten()
 
-   #print('\tpvar.shape = ', pvar.shape)
+    print('\tpvar.shape = ', pvar.shape)
 
     vmin = np.min(pvar)
     vmax = np.max(pvar)
 
+    print('\tpvar min: %f, max: %f' %(vmin, vmax))
+
+    nan_array = np.argwhere(np.isnan(pvar))
+
+    print('nan_array: ', nan_array)
+
    #if((vmax - vmin) > 1.0e-5):
    #  self.clevs, self.cblevs = get_plot_levels(pvar)
 
-    cyclic_data, cyclic_lons = add_cyclic_point(pvar, coord=lons)
+   #cyclic_data, cyclic_lons = add_cyclic_point(pvar, coord=lons)
 
-    cs=ax.contourf(cyclic_lons, lats, cyclic_data, transform=proj,
-                       levels=self.clevs, extend=self.extend,
-                       alpha=self.alpha, cmap=self.cmapname)
-    #                  cmap=self.cmapname, extend='both')
+   #cs=ax.contourf(cyclic_lons, lats, cyclic_data, transform=proj,
+   #cs=ax.contourf(lons, lats, pvar, transform=proj,
+   #               levels=self.clevs, extend=self.extend,
+   #               alpha=self.alpha, cmap=self.cmapname)
+    maxLevels = 101
+    cs=ax.contourf(lons, lats, pvar, maxLevels, transform=proj,
+                   extend=self.extend,
+                   alpha=self.alpha, cmap=self.cmapname)
 
     ax.set_extent([-180, 180, -90, 90], crs=proj)
     ax.coastlines(resolution='auto', color='k')
@@ -70,7 +80,9 @@ class GeneratePlot():
     cbar_ax = fig.add_axes([0.1, 0.1, 0.80, 0.05])
 
    #Draw the colorbar
-    cbar=fig.colorbar(cs, cax=cbar_ax, pad=self.pad, ticks=self.cblevs,
+   #cbar=fig.colorbar(cs, cax=cbar_ax, pad=self.pad, ticks=self.cblevs,
+   #                  orientation='horizontal')
+    cbar=fig.colorbar(cs, cax=cbar_ax, pad=self.pad,
                       orientation='horizontal')
 
     cbar.set_label(self.label, rotation=0)
@@ -139,7 +151,8 @@ if __name__== '__main__':
   debug = 1
   output = 0
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data'
-  datafile = '%s/monthly_mean_gfs_4_202201_000.nc' %(datadir)
+ #datafile = '%s/monthly_mean_gfs_4_202201_000.nc' %(datadir)
+  datafile = '%s/hl_monthly_mean_gfs_4_202201_000.nc' %(datadir)
 
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile='])
   for o, a in opts:
@@ -157,36 +170,37 @@ if __name__== '__main__':
 
   ncf = nc4.Dataset(datafile, 'r')
 
-  lats = ncf.variables['lat_0'][:]
-  lons = ncf.variables['lon_0'][:]
+  lats = ncf.variables['lat'][:]
+  lons = ncf.variables['lon'][:]
 
 #-----------------------------------------------------------------------------------------
- #var = ncf.variables['PRMSL_P0_L101_GLL0'][:, :]
- #clevs = np.arange(99000.0, 104000.0, 100.0)
- #cblevs = np.arange(99000.0, 104000.0, 1000.0)
+  hgt = ncf.variables['alt'][:]
 
-  var = ncf.variables['TMP_P0_L1_GLL0'][:, :]
+  varname = 'T'
+  var = ncf.variables[varname][:, :, :]
+
   clevs = np.arange(220.0, 310.0, 1.0)
   cblevs = np.arange(220.0, 310.0, 10.0)
 
-  gp.set_clevs(clevs=clevs)
-  gp.set_cblevs(cblevs=cblevs)
+ #gp.set_clevs(clevs=clevs)
+ #gp.set_cblevs(cblevs=cblevs)
 
- #nlat, nlon = var.shape
-
-  gp.set_label('Pa')
+  gp.set_label(varname)
 
 #-----------------------------------------------------------------------------------------
-
-  title = 'SLP'
-  gp.set_title(title)
 
   print('\tvar.max: %f, var.min: %f' %(np.max(var), np.min(var)))
 
   imagename = 'slp.png'
   gp.set_imagename(imagename)
 
-  gp.plot(lons, lats, var)
+  nalt, nlat, nlon = var.shape
+  print('nlat = %d, nlat = %d, nlon = %d' %(nalt, nlat, nlon))
+  for n in range(0, nalt, 100):
+    print('Level %d var.min: %f, var.max: %f' %(n, np.min(var[n,:,:]), np.max(var[n,:,:])))
+    title = '%s at %f meter' %(varname, hgt[n])
+    gp.set_title(title)
+    gp.plot(lons, lats, var[n,:,:])
 
 #-----------------------------------------------------------------------------------------
   ncf.close()
