@@ -24,6 +24,7 @@ class GeneratePlot():
 
     self.set_default()
 
+ #------------------------------------------------------------------------
   def plot(self, lons, lats, pvar):
    #ax.coastlines(resolution='110m')
    #ax.gridlines()
@@ -103,6 +104,81 @@ class GeneratePlot():
     else:
       plt.show()
 
+ #------------------------------------------------------------------------
+  def plot_catelog(self, lons, lats, pvar):
+   #ax.coastlines(resolution='110m')
+   #ax.gridlines()
+
+    nrows = 1
+    ncols = 1
+
+   #set up the plot
+    proj = ccrs.PlateCarree()
+
+    fig, ax = plt.subplots(nrows=nrows,ncols=ncols,
+                           subplot_kw=dict(projection=proj),
+                           figsize=(11,8.5))
+ 
+   #axs is a 2 dimensional array of `GeoAxes`. Flatten it into a 1-D array
+   #axs=axs.flatten()
+
+    print('\tpvar.shape = ', pvar.shape)
+
+    vmin = np.min(pvar)
+    vmax = np.max(pvar)
+
+    print('\tpvar min: %f, max: %f' %(vmin, vmax))
+
+    nan_array = np.argwhere(np.isnan(pvar))
+
+    print('nan_array: ', nan_array)
+
+   #if((vmax - vmin) > 1.0e-5):
+   #  self.clevs, self.cblevs = get_plot_levels(pvar)
+
+   #cs=ax.imshow(lons, lats, pvar, transform=proj,
+   #             extend=self.extend,
+   #             cmap='viridis', interpolation='nearest')
+
+    cs=ax.imshow(pvar,
+                 cmap='viridis', interpolation='nearest')
+
+    ax.set_extent([-180, 180, -90, 90], crs=proj)
+    ax.coastlines(resolution='auto', color='k')
+    ax.gridlines(color='lightgrey', linestyle='-', draw_labels=True)
+
+    ax.set_title(self.title)
+
+   #Adjust the location of the subplots on the page to make room for the colorbar
+   #fig.subplots_adjust(bottom=0.1, top=0.8, left=0.05, right=0.95,
+   #                    wspace=0.02, hspace=0.02)
+
+   #Add a colorbar axis at the bottom of the graph
+   #cbar_ax = fig.add_axes([0.1, 0.1, 0.80, 0.05])
+
+   #Draw the colorbar
+   #cbar=fig.colorbar(cs, cax=cbar_ax, pad=self.pad,
+   #                  orientation='horizontal')
+
+   #cbar.set_label(self.label, rotation=0)
+
+   #Add a big title at the top
+    plt.suptitle(self.title)
+
+    fig.canvas.draw()
+    plt.tight_layout()
+
+    if(self.output):
+      if(self.imagename is None):
+        imagename = 't_aspect.png'
+      else:
+        imagename = self.imagename
+      plt.savefig(imagename)
+      plt.close()
+    else:
+      plt.show()
+
+ #------------------------------------------------------------------------
   def set_default(self):
     self.imagename = 'sample.png'
 
@@ -174,10 +250,58 @@ if __name__== '__main__':
   lons = ncf.variables['lon'][:]
 
 #-----------------------------------------------------------------------------------------
+  grav = 9.81
+  rgas = 287.05
   hgt = ncf.variables['alt'][:]
 
   varname = 'T'
-  var = ncf.variables[varname][:, :, :]
+ #varname = 'U'
+ #varname = 'V'
+ #var = ncf.variables[varname][:, :, :]
+
+  temp = ncf.variables['T'][:, :, :]
+  pres = ncf.variables['P'][:, :, :]
+  var = pres/(rgas*temp)
+  varname = 'Rho'
+
+  nalt, nlat, nlon = temp.shape
+
+  mean_temp = np.mean(temp)
+  mean_pres = np.mean(pres)
+  mean_rho  = np.mean(var)
+
+  dt = temp - mean_temp
+  dp = pres - mean_pres
+  drho = var - mean_rho
+
+  opt1 = np.zeros((nalt, nlat, nlon), dtype=int)
+  opt2 = np.zeros((nalt, nlat, nlon), dtype=int)
+  opt3 = np.zeros((nalt, nlat, nlon), dtype=int)
+  cate = np.zeros((nalt, nlat, nlon), dtype=int)
+
+  dtdrho = dt*drho
+  dtdp = dt*dp
+  opt1 = np.where(dtdrho >= 0.0, 1, 0)
+  opt2 = np.where(dp >= 0.0, 1, 0)
+  cate = np.where(opt1*opt2, 1, cate)
+
+  opt2 = np.where(dp < 0.0, 1, 0)
+  cate = np.where(opt1*opt2, 2, cate)
+
+  opt1 = np.where(dt*drho < 0.0, 1, 0)
+  opt2 = np.where(dt*dp >= 0.0, 1, 0)
+  opt3 = np.where(dp >= 0.0, 1, 0)
+  cate = np.where(opt1*opt2*opt3, 3, cate)
+
+  opt3 = np.where(dp < 0.0, 1, 0)
+  cate = np.where(opt1*opt2*opt3, 4, cate)
+
+  opt2 = np.where(dt*dp < 0.0, 1, 0)
+  opt3 = np.where(dp >= 0.0, 1, 0)
+  cate = np.where(opt1*opt2*opt3, 5, cate)
+
+  opt3 = np.where(dp < 0.0, 1, 0)
+  cate = np.where(opt1*opt2*opt3, 6, cate)
 
   clevs = np.arange(220.0, 310.0, 1.0)
   cblevs = np.arange(220.0, 310.0, 10.0)
@@ -191,16 +315,19 @@ if __name__== '__main__':
 
   print('\tvar.max: %f, var.min: %f' %(np.max(var), np.min(var)))
 
-  imagename = 'slp.png'
-  gp.set_imagename(imagename)
-
   nalt, nlat, nlon = var.shape
   print('nlat = %d, nlat = %d, nlon = %d' %(nalt, nlat, nlon))
-  for n in range(0, nalt, 100):
+ #for n in range(0, nalt, 100):
+  for n in range(0, int(nalt/3), 100):
     print('Level %d var.min: %f, var.max: %f' %(n, np.min(var[n,:,:]), np.max(var[n,:,:])))
     title = '%s at %f meter' %(varname, hgt[n])
     gp.set_title(title)
-    gp.plot(lons, lats, var[n,:,:])
+    imagename = '%s_at_%f_meter.png' %(varname, hgt[n])
+    gp.set_imagename(imagename)
+
+   #gp.plot(lons, lats, var[n,:,:])
+    gp.plot(lons, lats, cate[n,:,:])
+   #gp.plot_catelog(lons, lats, cate[n,:,:])
 
 #-----------------------------------------------------------------------------------------
   ncf.close()
