@@ -1,22 +1,21 @@
 ;----------------------------------------------------------------------
 undef("plot_categorical")
-procedure plot_categorical(x)
+procedure plot_categorical(x:float, plottype:string, imgname:string)
 begin
   info  = (/ " 1 Thermal High", \
              " 2 Thermal Low ", \
              " 3 Warm High   ", \
              " 4 Cold Low    ", \
              " 5 Warm Low    ", \
-             " 6 Cold High   ", \
-             " 0 Unknown     ", \
-             "-1 Impossbile  " /) ; n=7
+             " 6 Cold High   " /)
   ninfo = dimsizes(info)
 
 ;************************************************
 ; create plot
 ;************************************************
  ;wks = gsn_open_wks("png","vegland")        ; send graphics to PNG file
-  wks = gsn_open_wks("x11","cate")        ; send graphics to PNG file
+ ;wks = gsn_open_wks("x11","cate")        ; send graphics to PNG file
+  wks = gsn_open_wks(plottype, imgname)
 
   res                  = True                ; plot mods desired
   res@gsnDraw          = False
@@ -33,11 +32,12 @@ begin
   res@cnLineLabelsOn   = False              ; Turn off contour line labels
 
   res@cnLevelSelectionMode = "ExplicitLevels"              ; set explict contour levels
-  res@cnLevels         = integertobyte( ispan(1,ninfo-1,1) ) ; one less than ninfo
-
+ ;res@cnLevels         = integertobyte( ispan(1,ninfo-1,1) ) ; one less than ninfo
+  res@cnLevels         = (/2, 3, 4, 5, 6/)
+  res@cnFillColors = (/"Magenta", "Blue", "Orange", "Cyan", "Red", "Green"/)
   res@lbLabelPosition  = "Center"           ; label position
   res@lbLabelAlignment = "BoxCenters"       ; label orientation
-  res@lbLabelStrings   = ispan(2,ninfo,1)  
+  res@lbLabelStrings   = ispan(1,ninfo,1)  
 
   res@pmLabelBarHeightF        =  0.075
  ;res@pmLabelBarWidthF         =  0.60      ; default is 0.6
@@ -52,12 +52,12 @@ begin
   rtxt = True
   rtxt@txJust        = "CenterLeft"
   rtxt@txFontHeightF = 0.010 
-                            ; 3 rows x 6 columns of text
+                            ; 1 rows x 6 columns of text
   n  = -1
   xx = 0.05                 ; arbitrary
-  do ncol=0,3
+  do ncol=0,5
      yy = 0.22 
-    do nrow=0,1
+    do nrow=0,0
        n = n+1
        gsn_text_ndc (wks,info(n),xx,yy,rtxt)
        yy = yy - 3*rtxt@txFontHeightF

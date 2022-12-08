@@ -11,10 +11,10 @@
  cd ${datadir}
 
  year=2022
-#month=10
- month=01
-#month=04
+#month=01
+ month=04
 #month=07
+#month=10
 
  ym=$year$month
 

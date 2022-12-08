@@ -341,8 +341,11 @@ class Interpolate2Height():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data'
-  infile = 'monthly_mean_gfs_4_202201_000.nc'
+ #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data'
+ #infile = 'monthly_mean_gfs_4_202201_000.nc'
+
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
+  infile = 'gfs_4_20220116_0000_000.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])
@@ -358,7 +361,7 @@ if __name__== '__main__':
 
  #-----------------------------------------------------------------------------------------
   i2h = Interpolate2Height(debug=debug)
-  infile = '%s/%s' %(datadir, infile)
-  outfile = infile.replace('monthly_mean', 'hl_monthly_mean')
-  i2h.process(filename=infile, outfile=outfile)
+  filename = '%s/%s' %(datadir, infile)
+  outfile = '%s/hl_%s' %(datadir, infile)
+  i2h.process(filename=filename, outfile=outfile)
 

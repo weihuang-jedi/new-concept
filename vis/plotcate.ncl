@@ -84,10 +84,10 @@ begin
  ;TY@long_name = "TY: gradsg"
   TY@units     = "K/s"
 
-  print("")
-  printMinMax(TX,False)
-  printMinMax(TY,True )          ; unscaled
-  print("")
+ ;print("")
+ ;printMinMax(TX,False)
+ ;printMinMax(TY,True )          ; unscaled
+ ;print("")
 
 ;************************************************
 ; PLOTS:  SCALE gradients  for graphical esthetics
@@ -96,25 +96,22 @@ begin
   TX = TX*sclx
   TY = TY*scly
 
-  print("")
-  print("=====> scaled values <=====")
-  print("")
-  printMinMax(TX,False)
-  printMinMax(TY, True)          ; scaled
-  print("")
+ ;print("")
+ ;print("=====> scaled values <=====")
+ ;print("")
+ ;printMinMax(TX,False)
+ ;printMinMax(TY, True)          ; scaled
+ ;print("")
 
   return [/TX, TY/]
 end
 
 ;************************************************
-  diri = "/work2/noaa/gsienkf/weihuang/gfs/data/"
-  fili = "hl_monthly_mean_gfs_4_202201_000.nc"
-  f = addfile(diri+fili,"r")
-
- ;T = f->T(51, :, :)
- ;P = f->P(51, :, :)
-  T = f->T(100, :, :)
-  P = f->P(100, :, :)
+undef("gen_plot")
+procedure gen_plot(f:file, plottype:string, level:integer)
+begin
+  T = f->T(level, :, :)
+  P = f->P(level, :, :)
   Rho = P / (287.0*T)
 
   T@long_name = "T"                     ; short name for plot labeling clarity
@@ -122,6 +119,11 @@ end
  ;printVarSummary(T)                    ; (94,192) gaussian [S->N]
  ;printMinMax(T,True)
  ;print("")
+
+  alt = f->alt
+  hgt = toint(alt(level))
+
+  imgname = "catelog_at_" + tostring(hgt) + "meter"
   
 ;************************************************
  tlst = get_gradient(T)
@@ -169,10 +171,10 @@ end
  d2p@long_name = "P-laplase"
  d2r@long_name = "Rho-laplase"
 
- print("")
- printMinMax(d2t,False)
- printMinMax(d2p, True)
- printMinMax(d2r, True)
+;print("")
+;printMinMax(d2t,False)
+;printMinMax(d2p, True)
+;printMinMax(d2r, True)
 
 ;plot_gradient(d2p, d2r)
 ;plot_gradient(d2t, d2r)
@@ -230,51 +232,52 @@ end
 ;----------------------------------------------------------------------
 ;Cate 3:  dtdr >= 0, dtdp >= 0, d2p <= 0
  opt1 = where(dtdr .lt. 0.0, 1, 0)
- print("Working on opt1")
- sumopt1 = sum(opt1)
- print(sumopt1)
- pvar = tofloat(opt1)
- copy_VarCoords(T, pvar)
- pvar@long_name = "Opt1"
-;plot_var(pvar)
- plot_categorical(pvar)
-
- print("Working on opt2")
- opt2 = where(dtdp .gt. 0.0, 1, 0)
- sumopt2 = sum(opt2)
- print(sumopt2)
- pvar = tofloat(opt2)
- copy_VarCoords(T, pvar)
- pvar@long_name = "Opt2"
-;plot_var(pvar)
- plot_categorical(pvar)
-
- print("Working on opt3")
- opt3 = where(d2p .lt. 0.0, 1, 0)
- sumopt3 = sum(opt3)
- print(sumopt3)
- pvar = tofloat(opt2)
- copy_VarCoords(T, pvar)
- pvar@long_name = "Opt3"
-;plot_var(pvar)
- plot_categorical(pvar)
-
- print("Working on opt")
+ opt2 = where(dtdp .ge. 0.0, 1, 0)
+ opt3 = where(d2p .le. 0.0, 1, 0)
  opt = opt1*opt2*opt3
- sumopt = sum(opt)
- print(sumopt)
- pvar = tofloat(opt)
- copy_VarCoords(T, pvar)
- pvar@long_name = "Opt"
-;plot_var(pvar)
- plot_categorical(pvar)
-
- print("Check cate 3")
  cate = where(opt .gt. 0, 3, cate)
- sumcate = sum(cate)
- print(sumcate)
- pvar = smth9_Wrap(cate, 0.50, -0.25, False) ; light local smoothing
- pvar@long_name = "Cate 2"
-;plot_var(pvar)
- plot_categorical(pvar)
+
+;----------------------------------------------------------------------
+;Cate 4:  dtdr >= 0, dtdp >= 0, d2p > 0
+ opt3 = where(d2p .gt. 0.0, 1, 0)
+ opt = opt1*opt2*opt3
+ cate = where(opt .gt. 0, 4, cate)
+
+;----------------------------------------------------------------------
+;Cate 5:  dtdr >= 0, dtdp < 0, d2p <= 0
+ opt2 = where(dtdp .lt. 0.0, 1, 0)
+ opt3 = where(d2p .le. 0.0, 1, 0)
+ opt = opt1*opt2*opt3
+ cate = where(opt .gt. 0, 5, cate)
+
+;----------------------------------------------------------------------
+;Cate 6:  dtdr >= 0, dtdp < 0, d2p > 0
+ opt3 = where(d2p .gt. 0.0, 1, 0)
+ opt = opt1*opt2*opt3
+ cate = where(opt .gt. 0, 6, cate)
+;----------------------------------------------------------------------
+ pvar = tofloat(cate)
+;pvar = smth9_Wrap(pvar, 0.50, -0.25, True)
+;pvar = smth9_Wrap(pvar, 0.50, 0.25, True)
+;cate = toint(pvar + 0.5)
+;pvar = tofloat(cate)
+ plot_categorical(pvar, plottype, imgname)
+end
+
+;************************************************
+;plottype = "png"
+ plottype = "x11"
+
+ diri = "/work2/noaa/gsienkf/weihuang/gfs/data/"
+ fili = "hl_monthly_mean_gfs_4_202201_000.nc"
+;diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
+;fili = "hl_gfs_4_20220116_0000_000.nc"
+ f = addfile(diri+fili,"r")
+
+ alt = f->alt(:)
+ nalts = dimsizes(alt)
+
+ do level = 20, nalts, 20
+    gen_plot(f, plottype, level)
+ end do
 

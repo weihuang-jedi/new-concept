@@ -9,8 +9,8 @@
 
  year=2022
 #month=10
- month=01
-#month=04
+#month=01
+ month=04
 #month=07
 
  ym=$year$month
@@ -35,6 +35,7 @@
      rm -f ${dataname}.nc
     #cdo -f nc4 copy ${dataname}.grb2 ${dataname}.nc
      ncl_convert2nc ${dataname}.grb2
+     rm -f ${dataname}.grb2
    done
  done
 
