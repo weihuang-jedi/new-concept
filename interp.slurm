@@ -20,5 +20,5 @@
 
  time python genheightvar.py --debug=0 \
 	--datadir=/work2/noaa/gsienkf/weihuang/gfs/data/jan2022 \
-        --infile=gfs_4_20220116_0600_000.nc
+        --infile=gfs_4_20220116_1200_000.nc
 

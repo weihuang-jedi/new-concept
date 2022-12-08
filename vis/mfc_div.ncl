@@ -60,31 +60,31 @@
  vq@units = "["+v@units+"]["+q@units+"]" 
  copy_VarCoords(v,vq)                        ; (level,lat,lon)
 
- printVarSummary(q)                          ; (level,lat,lon); g/kg
- printMinMax(q,0)
- print("-----")
- printVarSummary(u)                          ; (level,lat,lon); m/s
- printMinMax(u,0)
- print("-----")
- printVarSummary(v)
- printMinMax(v,0)
- print("-----")
- printVarSummary(ps)                         ; (lat,lon); Pa => kg/(m-s2) 
- printMinMax(ps,0)
- print("-----")
- printVarSummary(uq)                         ; (level,lat,lon); (m/s)(g/kg)
- printMinMax(uq,0)
- print("-----")
- printVarSummary(vq)
- printMinMax(vq,0)
- print("-----")
- printVarSummary(dp)                         ; (level,lat,lon); Pa => kg/(m-s2)
- printMinMax(dp,0)
- print("-----")
+;printVarSummary(q)                          ; (level,lat,lon); g/kg
+;printMinMax(q,0)
+;print("-----")
+;printVarSummary(u)                          ; (level,lat,lon); m/s
+;printMinMax(u,0)
+;print("-----")
+;printVarSummary(v)
+;printMinMax(v,0)
+;print("-----")
+;printVarSummary(ps)                         ; (lat,lon); Pa => kg/(m-s2) 
+;printMinMax(ps,0)
+;print("-----")
+;printVarSummary(uq)                         ; (level,lat,lon); (m/s)(g/kg)
+;printMinMax(uq,0)
+;print("-----")
+;printVarSummary(vq)
+;printMinMax(vq,0)
+;print("-----")
+;printVarSummary(dp)                         ; (level,lat,lon); Pa => kg/(m-s2)
+;printMinMax(dp,0)
+;print("-----")
                             ; examine layer thickness at selected locations
- print(dp(:,{40},{180}))    ; mid-Pacific
- print(dp(:,{40},{255}))    ; Boulder, CO 
- print("-----")
+;print(dp(:,{40},{180}))    ; mid-Pacific
+;print(dp(:,{40},{255}))    ; Boulder, CO 
+;print("-----")
 
 ;Integrated mass weighted moisture flux components
 
@@ -117,46 +117,12 @@
  iduvq@long_name = "Integrated Mass Wgt MFC" 
  iduvq@LONG_NAME = "Integrated Mass Weighted Moisture Flux Convergence" 
  iduvq@units     = "g/(m2-s)"
- copy_VarCoords(u(:,0,:,:), iduvq)      ; (lat,lon)
+ copy_VarCoords(u(0,:,:), iduvq)      ; (lat,lon)
  delete(duvq_dpg)
 
  VIMFC =  iduvq           ; keep meta data                         
  VIMFC = -VIMFC           ; Note the preceding -1 [negative precedes integration] 
  VIMFC@long_name = "VIMFC"
-
-;Another way to compute Integrated divergence of moisture flux [iduvq_1]
-
-;IDUVQ = wgt_vertical_n(duvq, dp, 2, 1) 
-;iduvq_0 = IDUVQ[0]
-;iduvq_0 = iduvq_0/g                   ; complete mass weighting
-;iduvq_0@long_name = "Average Mass Weighted MFC" 
-;iduvq_0@LONG_NAME = "Average Mass Weighted Moisture Flux Convergence" 
-;iduvq_0@units    = "g/(m2-s)"
-
-;iduvq_1 = IDUVQ[1]                    ; same as iuvq_sum
-;iduvq_1 = iduvq_1/g
-;iduvq_1@long_name = "Integrated MFC" 
-;iduvq_1@LONG_NAME = "Integrated Moisture Flux Convergence" 
-;iduvq_1@units    = "g/(m2-s)"
-
- printVarSummary(iuq)                 ; (lat,lon)
- printMinMax(iuq,0)
- print("-----")
- printVarSummary(ivq)                 ; (lat,lon)
- printMinMax(ivq,0)
- print("-----")
- printVarSummary(duvq)                ; (lev,lat,lon)
- printMinMax(duvq,0)
- print("-----")
- printVarSummary(iduvq)               ; (lat,lon)
- printMinMax(iduvq,0)
- print("-----")
-;printVarSummary(iduvq_0)             ; (lat,lon)
-;printMinMax(iduvq_0,0)
-;print("-----")
-;printVarSummary(iduvq_1)             ; (lat,lon)
-;printMinMax(iduvq_1,0)
-;print("-----")
 
 ;*************************************************
 ; Calculate divergence: Use Wrap to include meta data
@@ -175,12 +141,12 @@
  vd@long_name  = "Meridional Divergent Wind"
  vd@units      = v@units
 
- printVarSummary(ud)                 ; (level,lat,lon)
- printMinMax(ud,0)
- print("-----")
- printVarSummary(vd)                 ; (level,lat,lon)
- printMinMax(vd,0)
- print("-----")
+;printVarSummary(ud)                 ; (level,lat,lon)
+;printMinMax(ud,0)
+;print("-----")
+;printVarSummary(vd)                 ; (level,lat,lon)
+;printMinMax(vd,0)
+;print("-----")
 
 ;*************************************************
 ; plot results
@@ -195,17 +161,17 @@
 
  plot := new(2,graphic)
 
-;wks   = gsn_open_wks("png","mfc_div")        ; send graphics to PNG file
- wks   = gsn_open_wks("x11","mfc_div")        ; send graphics to PNG file
+ wks   = gsn_open_wks("png","mfc_div")        ; send graphics to PNG file
+;wks   = gsn_open_wks("x11","mfc_div")        ; send graphics to PNG file
  resd                 = True
  resd@cnFillOn        = True                  ; color
  resd@cnLinesOn       = False                 ; turn off contour lines
 
  resd@cnLevelSelectionMode = "ManualLevels"   ; set manual contour levels
- resd@cnMinLevelValF  = -15.                  ; set min contour level
- resd@cnMaxLevelValF  =  15.                  ; set max contour level
- resd@cnLevelSpacingF =   1.                  ; set contour spacing
- ;resd@cnFillPalette  = "cmocean_balance"     ; NCL 6.5.0
+ resd@cnMinLevelValF  = -5.0                  ; set min contour level
+ resd@cnMaxLevelValF  =  5.0                  ; set max contour level
+ resd@cnLevelSpacingF =  0.5                  ; set contour spacing
+;resd@cnFillPalette  = "cmocean_balance"      ; NCL 6.5.0
  resd@cnFillPalette   = "ViBlGrWhYeOrRe"
 
  resd@mpFillOn        = False                 ; turn off map fill
@@ -218,13 +184,13 @@
  resd@gsnScalarContour= True                  ; vectors over contours
  
  LEVP = 700
- DIV  = div({LEVP},:,:)                     ; keep meta data
- DIV  = DIV*scl6                               ; nicer numbers                 
+ DIV  = div({LEVP},::3,::3)                   ; keep meta data
+ DIV  = DIV*scl6                              ; nicer numbers                 
 
  resd@tiMainString    = "Divergence and Divergent Winds" 
  resd@gsnCenterString = LEVP+"hPa "
  resd@gsnRightString  = sclab6+" "+div@units
- dplt = gsn_csm_vector_scalar_map(wks,ud({LEVP},:,:),vd({LEVP},:,:),DIV,resd)
+;dplt = gsn_csm_vector_scalar_map(wks,ud({LEVP},:,:),vd({LEVP},:,:),DIV,resd)
 
 ;Moisture Transport [uq, vq] at a specified pressure level
 
@@ -240,12 +206,18 @@
  res@mpFillOn          = False            ; turn off map fill
                                           ; Use a common scale
  res@cnLevelSelectionMode = "ManualLevels"; manual set levels so lb consistent
- res@cnMaxLevelValF       =  140.0        ; max level
+ res@cnMaxLevelValF       =    0.1        ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =   10.0        ; contour interval
+ res@cnLevelSpacingF      =    0.005      ; contour interval
 
  LEVP    = 700
  res@gsnCenterString      = LEVP+"hPa"
+ print("-----")
+ printVarSummary(uq({LEVP},:,:))
+ printMinMax(uq({LEVP},:,:),0)
+ print("-----")
+ printVarSummary(vq({LEVP},:,:))
+ printMinMax(vq({LEVP},:,:),0)
  plot(0) = gsn_csm_contour_map(wks,uq({LEVP},:,:),res)
  plot(1) = gsn_csm_contour_map(wks,vq({LEVP},:,:),res)
 
@@ -257,9 +229,9 @@
 ;Integrated Moisture Transport [iuq, ivq]
 
  delete(res@gsnCenterString)              ; not used for this plot
- res@cnMaxLevelValF       = 10.0          ; min level
+ res@cnMaxLevelValF       =  5.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  0.5          ; contour interval
+ res@cnLevelSpacingF      =  0.1          ; contour interval
 
  IUQ     = iuq(:,:)                    ; local array: keep meta data
  IUQ     = IUQ/scl5                       ; scale for plot
@@ -271,6 +243,13 @@
  res@gsnRightString  = SCLAB5+" "+ivq@units
  plot(1) = gsn_csm_contour_map(wks,IVQ,res)
 
+ print("-----")
+ printVarSummary(IUQ)
+ printMinMax(IUQ, 0)
+ print("-----")
+ printVarSummary(IVQ)
+ printMinMax(IVQ, 0)
+
  resP@gsnPanelMainString  = "Mass Wgt. Component Moisture Flux"
  gsn_panel(wks,plot,(/2,1/),resP)               ; now draw as one plot
 
@@ -278,20 +257,24 @@
 
 ;Divergence of Moisture Flux
 
- res@cnMaxLevelValF       = 100.0          ; min level
+ res@cnMaxLevelValF       =  0.2          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  5.0          ; contour interval
-
- LEVP    = 700
- DUVQ    = duvq({LEVP},:,:)                    ; keep meta data
- DUVQ    = DUVQ*scl6                              ; scale for plot
- res@gsnCenterString = LEVP+"hPa"
- res@gsnRightString  = sclab6+" "+duvq@units
- plot(0) = gsn_csm_contour_map(wks,DUVQ,res)
+ res@cnLevelSpacingF      =  0.01         ; contour interval
 
  LEVP    = 500
  DUVQ    = duvq({LEVP},:,:)                    ; keep meta data
  DUVQ    = DUVQ*scl6
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvq@units
+ plot(0) = gsn_csm_contour_map(wks,DUVQ,res)
+
+ print("-----LEVP =" + tostring(LEVP))
+ printVarSummary(DUVQ)
+ printMinMax(DUVQ, 0)
+
+ LEVP    = 700
+ DUVQ    = duvq({LEVP},:,:)                    ; keep meta data
+ DUVQ    = DUVQ*scl6                              ; scale for plot
  res@gsnCenterString = LEVP+"hPa"
  res@gsnRightString  = sclab6+" "+duvq@units
  plot(1) = gsn_csm_contour_map(wks,DUVQ,res)
@@ -299,19 +282,96 @@
  resP@gsnPanelMainString  = "Divergence of Moisture Flux"
  gsn_panel(wks,plot,(/2,1/),resP)                ; now draw as one plot
 
+ print("-----LEVP =" + tostring(LEVP))
+ printVarSummary(DUVQ)
+ printMinMax(DUVQ, 0)
+
  delete(DUVQ)                                        ; no longer needed
  delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot 
 
+;Divergence of Moisture Flux
+
+ res@cnMaxLevelValF       =  0.2          ; max level
+ res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
+ res@cnLevelSpacingF      =  0.01         ; contour interval
+
+ LEVP    = 250
+ DUVQ    = duvq({LEVP},:,:)                    ; keep meta data
+ DUVQ    = DUVQ*scl6
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvq@units
+ plot(0) = gsn_csm_contour_map(wks,DUVQ,res)
+
+ print("-----LEVP =" + tostring(LEVP))
+ printVarSummary(DUVQ)
+ printMinMax(DUVQ, 0)
+
+ LEVP    = 850
+ DUVQ    = duvq({LEVP},:,:)                    ; keep meta data
+ DUVQ    = DUVQ*scl6                              ; scale for plot
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvq@units
+ plot(1) = gsn_csm_contour_map(wks,DUVQ,res)
+
+ print("-----LEVP =" + tostring(LEVP))
+ printVarSummary(DUVQ)
+ printMinMax(DUVQ, 0)
+
+ resP@gsnPanelMainString  = "Divergence of Moisture Flux"
+ gsn_panel(wks,plot,(/2,1/),resP)                ; now draw as one plot
+
+ delete(DUVQ)                                        ; no longer needed
+ delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot
+
+;Divergence of Moisture Flux
+
+ res@cnMaxLevelValF       =  0.2          ; max level
+ res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
+ res@cnLevelSpacingF      =  0.01         ; contour interval
+
+ LEVP    = 150
+ DUVQ    = duvq({LEVP},:,:)                    ; keep meta data
+ DUVQ    = DUVQ*scl6
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvq@units
+ plot(0) = gsn_csm_contour_map(wks,DUVQ,res)
+
+ print("-----LEVP =" + tostring(LEVP))
+ printVarSummary(DUVQ)
+ printMinMax(DUVQ, 0)
+
+ LEVP    = 950
+ DUVQ    = duvq({LEVP},:,:)                    ; keep meta data
+ DUVQ    = DUVQ*scl6                              ; scale for plot
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvq@units
+ plot(1) = gsn_csm_contour_map(wks,DUVQ,res)
+
+ print("-----LEVP =" + tostring(LEVP))
+ printVarSummary(DUVQ)
+ printMinMax(DUVQ, 0)
+
+ resP@gsnPanelMainString  = "Divergence of Moisture Flux"
+ gsn_panel(wks,plot,(/2,1/),resP)                ; now draw as one plot
+
+ delete(DUVQ)                                        ; no longer needed
+ delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot
+
 ;Integrated Divergence of Moisture Flux Convergence [no scaling]
+
+ print("-----")
+ printVarSummary(VIMFC)
+ printMinMax(VIMFC, 0)
 
  res@gsnDraw              = True
  res@gsnFrame             = True
  res@lbLabelBarOn         = True        
 
- ;res@cnFillPalette       = "cmp_flux"
- res@cnMaxLevelValF       =  0.50                ; min level
+;res@cnFillPalette        = "cmp_flux"
+ res@cnMaxLevelValF       =  0.2                 ; min level
  res@cnMinLevelValF       = -res@cnMaxLevelValF  ; min level
- res@cnLevelSpacingF      =  0.050               ; contour interval
+ res@cnLevelSpacingF      =  0.01                ; contour interval
  res@tiMainString         = "VIMFC"
 
  plt = gsn_csm_contour_map(wks,VIMFC(:,:) ,res)
+

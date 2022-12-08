@@ -147,7 +147,7 @@ if __name__== '__main__':
   rgas = 287.05
   hgt = ncf.variables['alt'][:]
 
- #qv = ncf.variables['Qv'][:, :, :]
+  qv = ncf.variables['Qv'][:, :, :]
   temp = ncf.variables['T'][:, :, :]
   pres = ncf.variables['P'][:, :, :]
  #u = ncf.variables['U'][:, :, :]
@@ -176,9 +176,8 @@ if __name__== '__main__':
     data.append(t)
     data.append(q)
    #data.append(w)
-    title = 'at %f meter' %(hgt[n])
+    title = 'North Hemisphere at %d meter' %(int(hgt[n]+0.5))
     gp.set_title(title)
-    imagename = 'at_%f_meter.png' %(hgt[n])
+    imagename = 'nh_at_%d_meter.png' %(int(hgt[n]+0.5))
     gp.set_imagename(imagename)
     gp.plot(lons, lats, data, namelist, unitlist)
-
