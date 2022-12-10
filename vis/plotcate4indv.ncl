@@ -108,11 +108,25 @@ end
 
 ;************************************************
 undef("gen_plot")
-procedure gen_plot(f:file, plottype:string, level:integer)
+procedure gen_plot(fb:file, f1:file, plottype:string, level:integer)
 begin
-  T = f->T(level, :, :)
-  P = f->P(level, :, :)
-  Rho = P / (287.0*T)
+  Tb = fb->T(level, :, :)
+  Pb = fb->P(level, :, :)
+  Rhob = Pb / (287.0*Tb)
+
+  T1 = f1->T(level, :, :)
+  P1 = f1->P(level, :, :)
+  Rho1 = P1 / (287.0*T1)
+
+  T = T1 - Tb
+  P = P1 - Pb
+  Rho = Rho1 - Rhob
+
+  copy_VarCoords(Tb, T)
+  copy_VarCoords(Pb, P)
+  copy_VarCoords(Tb, Rho)
+
+  delete([/Tb, Pb, Rhob, T1, P1, Rho1/])
 
   T@long_name = "T"                     ; short name for plot labeling clarity
 
@@ -120,7 +134,7 @@ begin
  ;printMinMax(T,True)
  ;print("")
 
-  alt = f->alt
+  alt = fb->alt
   hgt = toint(alt(level))
 
   imgname = "catelog_at_" + tostring(hgt) + "meter"
@@ -269,14 +283,15 @@ end
  plottype = "x11"
 
  diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- fili = "hl_monthly_mean_gfs_4_202201_000.nc"
-;fili = "hl_gfs_4_20220116_0000_000.nc"
- f = addfile(diri+fili,"r")
+ filb = "hl_monthly_mean_gfs_4_202201_000.nc"
+ fil1 = "hl_gfs_4_20220116_0000_000.nc"
+ fb = addfile(diri+filb,"r")
+ f1 = addfile(diri+fil1,"r")
 
- alt = f->alt(:)
+ alt = fb->alt
  nalts = dimsizes(alt)
 
  do level = 20, nalts, 20
-    gen_plot(f, plottype, level)
+    gen_plot(fb, f1, plottype, level)
  end do
 

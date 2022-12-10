@@ -53,14 +53,6 @@
  ta(0:malt-1,:,:) = 0.5*(t(0:malt-1,:,:) + t(1:malt,:,:))
  ra(0:malt-1,:,:) = 0.5*(rho(0:malt-1,:,:) + rho(1:malt,:,:))
  dz(0:malt-1,:,:) = z(1:malt,:,:) - z(0:malt-1,:,:)
-;do k = 0, malt-1
-;   print("k = " + tostring(k))
-;   ua(k,:,:) = 0.5*(u(k,:,:) + u(k+1, :,:))
-;   va(k,:,:) = 0.5*(v(k,:,:) + v(k+1, :,:))
-;   ta(k,:,:) = 0.5*(t(k,:,:) + t(k+1, :,:))
-;   ra(k,:,:) = 0.5*(rho(k,:,:) + rho(k+1, :,:))
-;   dz(k,:,:) = z(k+1,:,:) - z(k, :,:)
-;end do
 
  print("Part 2.3")
 ;printVarSummary(ua)
@@ -73,20 +65,18 @@
 ;print(ta(::100,1,1))
 ;print(dz(::100,1,1))
 
-;exit
-
  print("Part 3")
  print("Density flux components at each height level")
 ;Density flux components at each height level
  ur = ua*ra
  ur@long_name = "Zonal Density Flux [ur]"
  ur@units = "["+u@units+"]["+ra@units+"]"     ; [m/s][kg/m3]     
- copy_VarCoords(u(0::malt,:,:),ur)                        ; (level,lat,lon)
+ copy_VarCoords(u(0:malt,:,:),ur)                        ; (level,lat,lon)
 
  vr = va*ra
  vr@long_name = "Meridional Density Flux [vr]"
  vr@units = "["+v@units+"]["+ra@units+"]" 
- copy_VarCoords(v(0::malt,:,:),vr)                        ; (level,lat,lon)
+ copy_VarCoords(v(0:malt,:,:),vr)                        ; (level,lat,lon)
 
  print("-----")
  printVarSummary(ur)                         ; (level,lat,lon); (m/s)(kg/m3)
@@ -174,9 +164,9 @@
  res@mpFillOn          = False            ; turn off map fill
                                           ; Use a common scale
  res@cnLevelSelectionMode = "ManualLevels"; manual set levels so lb consistent
- res@cnMaxLevelValF       =    0.1        ; max level
+ res@cnMaxLevelValF       =   20.0        ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =    0.005      ; contour interval
+ res@cnLevelSpacingF      =    1.0        ; contour interval
 
  LEVP    = 3000
  res@gsnCenterString      = LEVP+"m"
@@ -184,7 +174,7 @@
  printVarSummary(ur(LEVP/ndh,:,:))
  printMinMax(ur(LEVP/ndh,:,:),0)
  print("-----")
- printVarSummary(vr(LEVP/ndh:,:))
+ printVarSummary(vr(LEVP/ndh,:,:))
  printMinMax(vr(LEVP/ndh,:,:),0)
  plot(0) = gsn_csm_contour_map(wks,ur(LEVP/ndh,:,:),res)
  plot(1) = gsn_csm_contour_map(wks,vr(LEVP/ndh,:,:),res)
@@ -200,9 +190,9 @@
 ;---------------------------------------------------------------------------------------
 
  delete(res@gsnCenterString)              ; not used for this plot
- res@cnMaxLevelValF       =  5.0          ; max level
+ res@cnMaxLevelValF       =  100.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  0.1          ; contour interval
+ res@cnLevelSpacingF      =  5.0          ; contour interval
 
  IUQ     = iur(:,:)                    ; local array: keep meta data
  IUQ     = IUQ/scl5                       ; scale for plot
@@ -231,9 +221,9 @@
 ;Divergence of Density Flux
 ;---------------------------------------------------------------------------------------
 
- res@cnMaxLevelValF       =  0.2          ; max level
+ res@cnMaxLevelValF       =  8000.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  0.01         ; contour interval
+ res@cnLevelSpacingF      =  40.0         ; contour interval
 
  LEVP    = 1000
  pvar    = duvr(LEVP/ndh,:,:)
@@ -277,9 +267,9 @@
 ;Divergence of Density Flux
 ;---------------------------------------------------------------------------------------
 
- res@cnMaxLevelValF       =  0.2          ; max level
+ res@cnMaxLevelValF       =  8000.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  0.01         ; contour interval
+ res@cnLevelSpacingF      =  40.0         ; contour interval
 
  LEVP    = 5000
  pvar    = duvr(LEVP/ndh,:,:)
@@ -323,9 +313,9 @@
 ;Divergence of Density Flux
 ;---------------------------------------------------------------------------------------
 
- res@cnMaxLevelValF       =  0.2          ; max level
+ res@cnMaxLevelValF       =  8000.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  0.01         ; contour interval
+ res@cnLevelSpacingF      =  40.0         ; contour interval
 
  LEVP    = 9000
  pvar    = duvr(LEVP/ndh,:,:)
@@ -377,9 +367,9 @@
  res@lbLabelBarOn         = True        
 
 ;res@cnFillPalette        = "cmp_flux"
- res@cnMaxLevelValF       =  0.2                 ; min level
+ res@cnMaxLevelValF       =  2000.0                 ; min level
  res@cnMinLevelValF       = -res@cnMaxLevelValF  ; min level
- res@cnLevelSpacingF      =  0.01                ; contour interval
+ res@cnLevelSpacingF      =  10.0                ; contour interval
  res@tiMainString         = "VIMFC"
 
  plt = gsn_csm_contour_map(wks,VIMFC(:,:) ,res)

@@ -1,6 +1,6 @@
 ;----------------------------------------------------------------------
 undef("plot_categorical")
-procedure plot_categorical(x:float, plottype:string, imgname:string)
+procedure plot_categorical(x:float, plottype:string, imgname:string, hgt:float)
 begin
   info  = (/ " 1 Thermal High", \
              " 2 Thermal Low ", \
@@ -38,6 +38,8 @@ begin
   res@lbLabelPosition  = "Center"           ; label position
   res@lbLabelAlignment = "BoxCenters"       ; label orientation
   res@lbLabelStrings   = ispan(1,ninfo,1)  
+
+  res@tiMainString     = "Thermal-Dynamic Category at " + tostring(hgt) + "_meter"
 
   res@pmLabelBarHeightF        =  0.075
  ;res@pmLabelBarWidthF         =  0.60      ; default is 0.6
