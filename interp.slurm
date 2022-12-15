@@ -14,11 +14,9 @@
  ulimit -S unlimited
  ulimit -c unlimited
 
- cd /work2/noaa/gsienkf/weihuang/gfs
+ cd /work2/noaa/gsienkf/weihuang/gfs/data/annual
 
-#rm -f data/hl_*.nc
-
- time python genheightvar.py --debug=0 \
-	--datadir=/work2/noaa/gsienkf/weihuang/gfs/data/jan2022 \
-        --infile=gfs_4_20220116_1200_000.nc
+ time python /work2/noaa/gsienkf/weihuang/gfs/genheightvar.py --debug=0 \
+	--datadir=/work2/noaa/gsienkf/weihuang/gfs/data/annual \
+        --infile=annual_mean_gfs_4_2022.nc
 

@@ -2,58 +2,43 @@ load "categorical.ncl"
 
 ;************************************************
 undef("gen_plot")
-procedure gen_plot(fb:file, f1:file, plottype:string, level:integer)
+procedure gen_plot(f:file, plottype:string)
 begin
-  Tb = fb->T(level, :, :)
-  Pb = fb->P(level, :, :)
-  Rhob = Pb / (287.0*Tb)
-
-  alt = fb->alt
-  hgt = toint(alt(level))
-
-  T1 = f1->T(level, :, :)
-  P1 = f1->P(level, :, :)
+  T1 = f->T(:, :, :)
+  P1 = f->P(:, :, :)
   Rho1 = P1 / (287.0*T1)
 
-  imgname = "catelog_at_" + tostring(hgt) + "meter"
+  imgname = "catelog average section"
   
 ;----------------------------------------------------------------------
- dt = T1 - Tb
- dp = P1 - Pb
- dr = Rho1 - Rhob
+ dt = T1
+ dp = P1
+ dr = Rho1
 
-;dt = T1
-;dp = P1
-;dr = Rho1
+ alt = T1&alt
+ lat = T1&lat
+ lon = T1&lon
 
-;tmean = avg(dt)
-;pmean = avg(dp)
-;rmean = avg(dr)
+ dimT = dimsizes(T1)
+ nalt = dimT(0)
+ nlat = dimT(1)
+ nlon = dimT(2)
+ lev = new((/nalt/), float, -1.0e32)
 
- tm = dim_avg(Tb)
- pm = dim_avg(Pb)
- rm = dim_avg(Rhob)
+ do n=0, nalt-1
+    tm = avg(T1(n,:,:))
+    pm = avg(P1(n,:,:))
+    rm = avg(Rho1(n,:,:))
 
- dims = dimsizes(Tb)
- tmean = conform_dims(dims, tm, 0)
- pmean = conform_dims(dims, pm, 0)
- rmean = conform_dims(dims, rm, 0)
+    dt(n,:,:) = T1(n,:,:) - tm
+    dp(n,:,:) = P1(n,:,:) - pm
+    dr(n,:,:) = Rho1(n,:,:) - rm
 
-;print(tmean)
-;print(pmean)
-;print(rmean)
-
- dt = T1 - tmean
- dp = P1 - pmean
- dr = Rho1 - rmean
+    lev(n) = pm
+ end do
 
  dtdr = dt*dr
  dtdp = dt*dp
-
- dimT = dimsizes(Tb)
- nlat = dimT(0)
- mlon = dimT(1)
- ngrids = nlat * mlon
 
  opt  = new(dimT, integer, -9999)
  opt1 = new(dimT, integer, -9999)
@@ -61,15 +46,8 @@ begin
  opt3 = new(dimT, integer, -9999)
  cate = new(dimT, integer, -9999)
 
- copy_VarCoords(Tb, cate)
- cate@long_name = "Catelog"
-
  opt3 = 0
  cate = 0
-
-;----------------------------------------------------------------------
- ngrids = nlat * mlon
- print(ngrids)
 
 ;----------------------------------------------------------------------
 ;Cate 1:  dtdr >= 0, dp >= 0          Thermal-Dynamic  Warm High Dense
@@ -116,26 +94,34 @@ begin
 ;pvar = smth9_Wrap(pvar, 0.50, 0.25, True)
 ;cate = toint(pvar + 0.5)
 ;pvar = tofloat(cate)
- plot_categorical(pvar, plottype, imgname, hgt)
+
+;copy_VarCoords(T1, pvar)
+ pvar@long_name = "Catelog"
+
+ write2file(T1, P1, pvar, "stateCate.nc")
+
+ lev!0 = "lev" 
+ lev&lev = lev
+ lev@units = "Pa"
+
+ pvar!0 = "lev" 
+ pvar!1 = "lat" 
+ pvar!2 = "lon" 
+ pvar&lev = lev
+ pvar&lat = lat
+ pvar&lon = lon
+
+ plot_cate_section(pvar, plottype, imgname)
 end
 
 ;************************************************
 ;plottype = "png"
  plottype = "x11"
 
- dirb = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
- filb = "hl_annual_mean_gfs_4_2022.nc"
- fb = addfile(dirb+filb,"r")
+ dir = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
+ fil = "hl_monthly_mean_gfs_4_202201.nc"
+;fil = "hl_gfs_4_20220116_0000_000.nc"
+ f = addfile(dir+fil,"r")
 
- dir1 = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
-;fil1 = "hl_monthly_mean_gfs_4_202201.nc"
- fil1 = "hl_gfs_4_20220116_0000_000.nc"
- f1 = addfile(dir1+fil1,"r")
-
- alt = fb->alt(:)
- nalts = dimsizes(alt)
-
- do level = 20, nalts, 20
-    gen_plot(fb, f1, plottype, level)
- end do
+ gen_plot(f, plottype)
 

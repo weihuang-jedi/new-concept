@@ -107,11 +107,11 @@ begin
 end
 
 ;************************************************
-undef("gen_plot")
-procedure gen_plot(f:file, plottype:string, level:integer)
+undef("gen_plot4section")
+procedure gen_plot4section(f:file, plottype:string)
 begin
-  T = f->T(level, :, :)
-  P = f->P(level, :, :)
+  T = f->T(:, :, :)
+  P = f->P(:, :, :)
   Rho = P / (287.0*T)
 
   T@long_name = "T"                     ; short name for plot labeling clarity
@@ -121,9 +121,8 @@ begin
  ;print("")
 
   alt = f->alt
-  hgt = toint(alt(level))
 
-  imgname = "catelog_at_" + tostring(hgt) + "meter"
+  imgname = "catelog_section"
   
 ;************************************************
  tlst = get_gradient(T)
@@ -131,7 +130,7 @@ begin
  TY = tlst[1]
  delete(tlst)
 
- d2t = uv2dvF_Wrap(TX,TY)
+;d2t = uv2dvF_Wrap(TX,TY)
 
 ;************************************************
  plst = get_gradient(P)
@@ -141,8 +140,8 @@ begin
 
  d2p = uv2dvF_Wrap(PX,PY)
 
- PX = 0.01*PX
- PY = 0.01*PY
+;PX = 0.01*PX
+;PY = 0.01*PY
 
 ;plot_gradient(PX, PY)
 
@@ -156,20 +155,20 @@ begin
  RY = rlst[1]
  delete(rlst)
 
- d2r = uv2dvF_Wrap(RX, RY)
+;d2r = uv2dvF_Wrap(RX, RY)
 
- RX = 500.0*RX
- RY = 500.0*RY
+;RX = 500.0*RX
+;RY = 500.0*RY
 
 ;plot_gradient(RX, RY)
 
- d2t = 1.0e4*d2t
- d2p = 1.0e2*d2p
- d2r = 1.0e6*d2r
+;d2t = 1.0e4*d2t
+;d2p = 1.0e2*d2p
+;d2r = 1.0e6*d2r
 
- d2t@long_name = "T-laplase"
- d2p@long_name = "P-laplase"
- d2r@long_name = "Rho-laplase"
+;d2t@long_name = "T-laplase"
+;d2p@long_name = "P-laplase"
+;d2r@long_name = "Rho-laplase"
 
 ;print("")
 ;printMinMax(d2t,False)
@@ -181,43 +180,25 @@ begin
 
 ;----------------------------------------------------------------------
 ;WHERE(x < 0) x = x + 256                     ; f90 WHERE statement
-;x = where(x.lt.0, x+256, x)                ; NCL
 
  dtdr = TX*RX + TY*RY
  dtdp = TX*PX + TY*PY
 
  dimT = dimsizes(T)
- nlat = dimT(0)
- mlon = dimT(1)
- ngrids = nlat * mlon
+ nalt = dimT(0)
+ nlat = dimT(1)
+ nlon = dimT(2)
  opt  = new(dimT, integer, -9999)
  opt1 = new(dimT, integer, -9999)
  opt2 = new(dimT, integer, -9999)
  opt3 = new(dimT, integer, -9999)
  cate = new(dimT, integer, -9999)
- copy_VarCoords(T, cate)
- cate@long_name = "Catelog"
- copy_VarCoords(T, opt)
- opt@long_name = "Opt"
-
- copy_VarCoords(T, dtdr)
- dtdr@long_name = "Dt*Drho"
-;plot_var(dtdr)
-
- copy_VarCoords(T, dtdp)
- dtdp@long_name = "Dt*Dp"
-;plot_var(dtdp)
 
  opt3 = 0
  cate = 0
 
 ;----------------------------------------------------------------------
- ngrids = nlat * mlon
- print(ngrids)
-
-;----------------------------------------------------------------------
 ;Cate 1:  dtdr >= 0, d2p <= 0
- ngrids = nlat * mlon
  opt1 = where(dtdr .ge. 0.0, 1, 0)
  opt2 = where(d2p .le. 0.0, 1, 0)
  opt = opt1*opt2
@@ -261,7 +242,31 @@ begin
 ;pvar = smth9_Wrap(pvar, 0.50, 0.25, True)
 ;cate = toint(pvar + 0.5)
 ;pvar = tofloat(cate)
- plot_categorical(pvar, plottype, imgname, hgt)
+
+ lev = new((/nalt/), float, -1.0e32)
+
+ do n=0, nalt-1
+    pm = avg(P(n,:,:))
+
+    lev(n) = pm
+ end do
+
+ pvar@long_name = "Catelog"
+
+ write2file(T, P, pvar, "gradCate.nc")
+
+ lev!0 = "lev"
+ lev&lev = lev
+ lev@units = "Pa"
+
+ pvar!0 = "lev"
+ pvar!1 = "lat"
+ pvar!2 = "lon"
+ pvar&lev = lev
+ pvar&lat = P&lat
+ pvar&lon = P&lon
+
+ plot_cate_section(pvar, plottype, imgname)
 end
 
 ;************************************************
@@ -274,10 +279,5 @@ end
  fili = "hl_annual_mean_gfs_4_2022.nc"
  f = addfile(diri+fili,"r")
 
- alt = f->alt(:)
- nalts = dimsizes(alt)
-
- do level = 20, nalts, 20
-    gen_plot(f, plottype, level)
- end do
+ gen_plot4section(f, plottype)
 

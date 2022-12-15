@@ -1,17 +1,26 @@
 #!/bin/bash
+#SBATCH --ntasks-per-node=40
+#SBATCH -N 1
+#SBATCH -n 40
+#SBATCH -t 04:45:00
+#SBATCH -A gsienkf
+##SBATCH --partition=orion
+#SBATCH --partition=bigmem
+#SBATCH --job-name=interp
+#SBATCH --output=log.interp
 
  datadir=/work2/noaa/gsienkf/weihuang/gfs/data
 
 #module load cdo/1.9.10
  module load ncl
 
- cd ${datadir}
-
  year=2022
-#month=10
 #month=01
- month=04
-#month=07
+#month=04
+ month=07
+#month=10
+
+ cd ${datadir}/jul2022
 
  ym=$year$month
 
