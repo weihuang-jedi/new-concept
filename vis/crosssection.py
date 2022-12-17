@@ -4,6 +4,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import cartopy.crs as ccrs
@@ -47,55 +48,87 @@ class CrossSectionPlot():
     self.weight = 'bold'
     self.labelsize = 'medium'
 
-    self.label = 'Unit (C)'
-    self.title = 'Temperature Increment'
+    self.label = 'Unit None'
+    self.title = 'Atmospheric Catelog Cross Section'
 
  #------------------------------------------------------------------------
   def plot(self, lats, alts, pvar):
-   #Start Figure, set big size for cross section
-    fig = plt.figure(figsize=(12, 8))
+   #set up the plot
+    fig, ax = plt.subplots(nrows=1,ncols=1,
+                           figsize=(12,8))
 
-   #Specify plotting axis (single panel)
-    ax = plt.subplot(111)
+    print('\tpvar.shape = ', pvar.shape)
 
-   #Set y-scale to be log since pressure decreases exponentially with height
-   #ax.set_yscale('log')
+    vmin = np.min(pvar)
+    vmax = np.max(pvar)
 
-   #Set limits, tickmarks, and ticklabels for y-axis
-    ax.set_ylim([0, 10001])
-    ax.set_yticks(range(0, 10001, 1000))
-    ax.set_yticklabels(range(0, 10001, 1000))
+    pvar = pvar + 0.5
+    print('\tpvar min: %f, max: %f' %(vmin, vmax))
 
-   #Invert the y-axis since pressure decreases with increasing height
-   #ax.invert_yaxis()
+    cmap = colors.LinearSegmentedColormap.from_list("",
+           ["magenta", "navy", "orange", "cyan", "red","blue","brown"])
 
-   #Plot the sudo elevation on the cross section
-   #ax.fill_between(xsect['obs_distance'], xsect['elevation'].m, 1030,
-   #            where=xsect['elevation'].m <= 1030, facecolor='lightgrey',
-   #            interpolate=True, zorder=10)
-   #Don't plot xticks
-   #plt.xticks([], [])
+    cs=ax.contourf(lats, alts, pvar,
+                   levels=self.clevs,
+                   alpha=self.alpha, cmap=cmap)
 
-   #Plot smoothed potential temperature grid (K)
-    cs = ax.contourf(lats, alts, pvar, range(1, 7, 1), cmap = 'jet')
-    ax.clabel(cs, fmt='%i')
+    ax.set_title(self.title)
 
-   #Plot smoothed mixing ratio grid (g/kg)
-    cs = ax.contourf(lats, alts, pvar, range(1, 7, 1), colors='tab:black')
-    ax.clabel(cs, fmt='%i')
+   #Adjust the location of the subplots on the page to make room for the colorbar
+    fig.subplots_adjust(bottom=0.1, top=0.8, left=0.05, right=0.95,
+                        wspace=0.05, hspace=0.05)
 
-   # Add some informative titles
-    plt.title('Cross-Section of Atmospheric Systems Catalog', loc='left')
-    plt.title(date, loc='right')
+   #Add a colorbar axis at the bottom of the graph
+    cbar_ax = fig.add_axes([0.1, 0.1, 0.90, 0.05])
 
-    plt.show()
+   #Draw the colorbar
+    cbar=fig.colorbar(cs, cax=cbar_ax, pad=self.pad, ticks=self.cblevs,
+                      orientation='horizontal')
+
+    cbar.set_label(self.label, rotation=0)
+
+   #Add a big title at the top
+    plt.suptitle(self.title)
+
+    fig.canvas.draw()
+    plt.tight_layout()
+
+    if(self.output):
+      if(self.imagename is None):
+        imagename = 't_aspect.png'
+      else:
+        imagename = self.imagename
+      plt.savefig(imagename)
+      plt.close()
+    else:
+      plt.show()
+
+  def set_label(self, label='Unit (C)'):
+    self.label = label
+
+  def set_title(self, title='Temperature Increment'):
+    self.title = title
+
+  def set_clevs(self, clevs=[]):
+    self.clevs = clevs
+
+  def set_cblevs(self, cblevs=[]):
+    self.cblevs = cblevs
+
+  def set_imagename(self, imagename):
+    self.imagename = imagename
+
+  def set_cmapname(self, cmapname):
+    self.cmapname = cmapname
+
 
 #--------------------------------------------------------------------------------
 if __name__== '__main__':
   debug = 1
   output = 0
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/vis'
-  datafile = '%s/stateCate.nc' %(datadir)
+ #datafile = '%s/stateCate.nc' %(datadir)
+  datafile = '%s/gradCate.nc' %(datadir)
 
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile='])
   for o, a in opts:
@@ -109,8 +142,6 @@ if __name__== '__main__':
       assert False, 'unhandled option'
 
 #-----------------------------------------------------------------------------------------
-  gp = GeneratePlot(debug=debug, output=output)
-
   ncf = nc4.Dataset(datafile, 'r')
 
   alts = ncf.variables['alt'][:]
@@ -119,9 +150,18 @@ if __name__== '__main__':
   cate = ncf.variables['cate'][:,:,:]
 
 #-----------------------------------------------------------------------------------------
-  grav = 9.81
-  rgas = 287.05
-
   csp = CrossSectionPlot(debug=debug, output=output)
-  csp.plot(lats, alts[0:200], cate[0:200, :, :])
+
+  clevs = [1, 2, 3, 4, 5, 6, 7]
+  cblevs = [1, 2, 3, 4, 5, 6, 7]
+
+  csp.set_clevs(clevs=clevs)
+  csp.set_cblevs(cblevs=cblevs)
+
+  csp.set_title('Averaged Atmospheric Catalog')
+  csp.set_imagename('gradCate.png')
+
+  cscate = np.average(cate, axis=2)
+
+  csp.plot(lats, alts[0:200], cscate[0:200, :])
 

@@ -111,7 +111,7 @@ begin
   res@lbLabelAlignment = "BoxCenters"       ; label orientation
   res@lbLabelStrings   = ispan(1,ninfo,1)  
 
-  res@tiMainString     = "Thermal-Dynamic Category Avarage"
+  res@tiMainString     = "Zonal Averaged Atmospheric Catalog"
 
   res@pmLabelBarHeightF        =  0.075
  ;res@pmLabelBarWidthF         =  0.60      ; default is 0.6
@@ -132,15 +132,15 @@ begin
   rtxt@txFontHeightF = 0.010 
                             ; 1 rows x 6 columns of text
   n  = -1
-  xx = 0.15                 ; arbitrary
+  xx = 0.18                 ; arbitrary
   do ncol=0,5
-     yy = 0.10 
+     yy = 0.025 
     do nrow=0,0
        n = n+1
        gsn_text_ndc (wks,info(n),xx,yy,rtxt)
        yy = yy - 3*rtxt@txFontHeightF
     end do
-     xx = xx + 0.10
+     xx = xx + 0.12
   end do
   draw(plot)
   frame(wks)

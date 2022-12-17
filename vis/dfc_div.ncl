@@ -1,10 +1,9 @@
 ;===================================================================
- print("Part 1")
  g = 9.80665          ; m/s2
  r = 287.0
 
  diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- flnm = "hl_monthly_mean_gfs_4_202201_000.nc"
+ flnm = "hl_monthly_mean_gfs_4_202201.nc"
 
  path = diri+flnm      
 
@@ -15,7 +14,6 @@
  t = f->T(:,:,:)
  p = f->P(:,:,:)
 
- print("Part 2")
 ;Vertical levels
  h = t&alt
  h@units = "M"
@@ -28,7 +26,6 @@
 
  nalt = dims(0)
 
- print("Part 2.1")
 ;printVarSummary(z)
 ;printMinMax(z,0)
 ;printVarSummary(rho)
@@ -47,14 +44,12 @@
 
  malt = dims(0)
 
- print("Part 2.2")
  ua(0:malt-1,:,:) = 0.5*(u(0:malt-1,:,:) + u(1:malt,:,:))
  va(0:malt-1,:,:) = 0.5*(v(0:malt-1,:,:) + v(1:malt,:,:))
  ta(0:malt-1,:,:) = 0.5*(t(0:malt-1,:,:) + t(1:malt,:,:))
  ra(0:malt-1,:,:) = 0.5*(rho(0:malt-1,:,:) + rho(1:malt,:,:))
  dz(0:malt-1,:,:) = z(1:malt,:,:) - z(0:malt-1,:,:)
 
- print("Part 2.3")
 ;printVarSummary(ua)
 ;printVarSummary(va)
 ;printVarSummary(ta)
@@ -65,7 +60,6 @@
 ;print(ta(::100,1,1))
 ;print(dz(::100,1,1))
 
- print("Part 3")
  print("Density flux components at each height level")
 ;Density flux components at each height level
  ur = ua*ra
@@ -86,7 +80,6 @@
  printMinMax(vr,0)
  print("-----")
 
- print("Part 4")
  print("Integrated mass weighted density flux components")
 ;Integrated mass weighted density flux components
 
@@ -98,7 +91,6 @@
  copy_VarCoords(u(0,:,:), iur); (lat,lon)
  delete(ur_dz)
 
- print("Part 4.1")
  vr_dz = vr*dz                ; mass weighted 'vr'; [m/s][kg/m3][m]=>[m/s][kg/m2] 
  ivr    = dim_sum_n(vr_dz, 0)
  ivr@long_name = "Integrated Meridional VRho [vr*dz]" 
@@ -107,7 +99,6 @@
  copy_VarCoords(v(0,:,:), ivr); (lat,lon)
  delete(vr_dz)
 
- print("Part 5")
  print("Divergence of density flux: uv2dvF => global 'fixed' rectilinear grid")
 ;Divergence of density flux: uv2dvF => global 'fixed' rectilinear grid
 
@@ -115,7 +106,6 @@
  duvr@long_name = "Divergence of Density Flux"
  duvr@units     = "kg/(m2-s)"    ; (1/m)*[(m/s)(kg/m2)] => [kg/(m2-s)]
 
- print("Part 6")
  print("Mass weighted integration [sum] of the divergence of density flux")
 ;Mass weighted integration [sum] of the divergence of density flux
 
@@ -131,7 +121,6 @@
  VIMFC = -VIMFC           ; Note the preceding -1 [negative precedes integration] 
  VIMFC@long_name = "VIMFC"
 
- print("Part 7")
  print("plot results")
 ;*************************************************
 ; plot results
@@ -184,15 +173,14 @@
  resP@gsnPanelLabelBar    = True                ; add common colorbar
  gsn_panel(wks,plot,(/2,1/),resP)               ; now draw as one plot
 
- print("Part 8")
  print("Integrated Density Transport [iur, ivr]")
 ;Integrated Density Transport [iur, ivr]
 ;---------------------------------------------------------------------------------------
 
  delete(res@gsnCenterString)              ; not used for this plot
- res@cnMaxLevelValF       =  100.0          ; max level
+ res@cnMaxLevelValF       =  5.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  5.0          ; contour interval
+ res@cnLevelSpacingF      =  0.1          ; contour interval
 
  IUQ     = iur(:,:)                    ; local array: keep meta data
  IUQ     = IUQ/scl5                       ; scale for plot
@@ -216,14 +204,13 @@
 
  delete( [/IUQ, IVQ/] )                   ; no longer needed
 
- print("Part 9")
  print("Divergence of Density Flux")
 ;Divergence of Density Flux
 ;---------------------------------------------------------------------------------------
 
- res@cnMaxLevelValF       =  8000.0          ; max level
+ res@cnMaxLevelValF       =  20.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  40.0         ; contour interval
+ res@cnLevelSpacingF      =  1.0         ; contour interval
 
  LEVP    = 1000
  pvar    = duvr(LEVP/ndh,:,:)
@@ -262,14 +249,13 @@
  delete(pvar)                                        ; no longer needed
  delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot
 
- print("Part 9.1")
  print("Divergence of Density Flux")
 ;Divergence of Density Flux
 ;---------------------------------------------------------------------------------------
 
- res@cnMaxLevelValF       =  8000.0          ; max level
+ res@cnMaxLevelValF       =  40.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  40.0         ; contour interval
+ res@cnLevelSpacingF      =  2.0         ; contour interval
 
  LEVP    = 5000
  pvar    = duvr(LEVP/ndh,:,:)
@@ -308,14 +294,13 @@
  delete(pvar)                                        ; no longer needed
  delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot
 
- print("Part 9.2")
  print("Divergence of Density Flux")
 ;Divergence of Density Flux
 ;---------------------------------------------------------------------------------------
 
- res@cnMaxLevelValF       =  8000.0          ; max level
+ res@cnMaxLevelValF       =  80.0          ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
- res@cnLevelSpacingF      =  40.0         ; contour interval
+ res@cnLevelSpacingF      =  4.0         ; contour interval
 
  LEVP    = 9000
  pvar    = duvr(LEVP/ndh,:,:)
@@ -354,7 +339,6 @@
  delete(pvar)                                        ; no longer needed
  delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot
 
- print("Part 10")
  print("Integrated Divergence of Density Flux Convergence [no scaling]")
 ;Integrated Divergence of Density Flux Convergence [no scaling]
 
@@ -367,9 +351,9 @@
  res@lbLabelBarOn         = True        
 
 ;res@cnFillPalette        = "cmp_flux"
- res@cnMaxLevelValF       =  2000.0                 ; min level
+ res@cnMaxLevelValF       =  20.0               ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF  ; min level
- res@cnLevelSpacingF      =  10.0                ; contour interval
+ res@cnLevelSpacingF      =  1.0                ; contour interval
  res@tiMainString         = "VIMFC"
 
  plt = gsn_csm_contour_map(wks,VIMFC(:,:) ,res)
