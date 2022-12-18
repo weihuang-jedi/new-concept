@@ -51,10 +51,10 @@ class CrossSectionPlot():
     self.labelsize = 'medium'
 
     self.label = 'Unit None'
-    self.title = 'Atmospheric Catelog Cross Section'
+    self.title = 'Zonal Averaged Annual Atmospheric Catalog'
 
  #------------------------------------------------------------------------
-  def plot(self, lats, alts, pvar, ymax=10000.0):
+  def plot(self, lats, alts, pvar, ymax=10000):
     fig, ax = plt.subplots(constrained_layout=True, figsize=(11,8.5))
     levels = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
     colors = ('magenta', 'navy', 'orange', 'cyan', 'red', 'blue', 'brown')
@@ -65,14 +65,15 @@ class CrossSectionPlot():
     cs.cmap.set_under('magenta')
     cs.cmap.set_over('blue')
 
-    ax.set_title('Zonal Averaged Atmospheric Catalog')
+    ax.set_title(self.title)
 
    #Axis customization
     xticklabels = ['90S', '75S', '60S', '45S', '30S', '15S', '0',
                    '15N', '30N', '45N', '60N', '75N', '90N']
+   #ax.xaxis.set_major_locator(ticker.FixedLocator(lats[::30]))
+   #ax.xaxis.set_minor_locator(ticker.FixedLocator(np.linspace(0.2, 0.8, 4)))
     ax.set_xticklabels(xticklabels)
     plt.xticks(lats[::30], xticklabels)
-    ax.set_ylabel('Height (meter)')
 
     ytickpos = np.arange(0, ymax+1000, 1000)
     yticklabels = []
@@ -80,7 +81,9 @@ class CrossSectionPlot():
       lbl = str(tick)
       yticklabels.append(lbl)
     ax.set_yticklabels(yticklabels)
+   #ax.yaxis.set_major_locator(ticker.FixedLocator(ytickpos))
     plt.yticks(ytickpos, yticklabels)
+    ax.set_ylabel('Height (meter)')
 
    #Notice that the colorbar gets all the information it
    #needs from the ContourSet object, cs.
@@ -130,8 +133,11 @@ if __name__== '__main__':
   output = 0
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/annual'
   datafile = '%s/annual_grad_cate.nc' %(datadir)
+  title = 'Zonal Averaged Annual Atmospheric Catalog'
+  imagename = 'zonal_averaged_annual.png'
 
-  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile='])
+  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile=',
+                                                'title=', 'imagename='])
   for o, a in opts:
     if o in ('--debug'):
       debug = int(a)
@@ -139,8 +145,16 @@ if __name__== '__main__':
       output = int(a)
     elif o in ('--datafile'):
       datafile = a
+    elif o in ('--title'):
+      title = a
+    elif o in ('--imagename'):
+      imagename = a
     else:
       assert False, 'unhandled option'
+
+  print('datafile = ', datafile)
+  print('title = ', title)
+  print('imagename = ', imagename)
 
 #-----------------------------------------------------------------------------------------
   ncf = nc4.Dataset(datafile, 'r')
@@ -159,10 +173,11 @@ if __name__== '__main__':
   csp.set_clevs(clevs=clevs)
   csp.set_cblevs(cblevs=cblevs)
 
-  csp.set_title('Averaged Atmospheric Catalog')
-  csp.set_imagename('gradCate.png')
+  csp.set_title(title)
+  csp.set_imagename(imagename)
 
-  cscate = np.average(cate, axis=2)
+ #cscate = np.average(cate, axis=2)
+  cscate = cate[:,:,360]
 
-  csp.plot(lats, alts[0:200], cscate[0:200, :])
+  csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
 

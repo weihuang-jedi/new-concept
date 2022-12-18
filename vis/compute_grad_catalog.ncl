@@ -3,41 +3,20 @@ load "categorical.ncl"
 undef ("get_gradient")
 function get_gradient(T:float)
 begin
-  dimT = dimsizes(T)
-  nlat = dimT(0)
-  mlon = dimT(1)
-
- ;print(nlat)
- ;print(mlon)
-
-  rad   = 4.*atan(1.)/180.
-  lat   = T&lat
-  lon   = T&lon
-
-  re    = 6.37122e6                      ; spherical earth
-  con   = re*rad                         ; one deg lat = 111198.8 meters
-  scly  = 1e5                            ; scale => nicer plots
-  sclx  = 1e5  
-  
 ;************************************************
 ; SPHERICAL HARMONICS:
 ; Use "highly accurate" spherical harmonics procedure (gradsg)
 ; to compute zonal (X) and meridional (Y) gradients.
 ;************************************************
-; pre-allocate space for return gradients
+
+  T = smth9_Wrap(T, 0.50, 0.25, True)
+  T = smth9_Wrap(T, 0.50, 0.25, True)
+
+ ;pre-allocate space for return gradients
   TX = new( dimT, typeof(T), getFillValue(T) )  ; lon=>X
   TY = new( dimT, typeof(T), getFillValue(T) )  ; lat=>Y
 
   gradsg(T, TX, TY)     ; procedure for gaussian grids
-
-  copy_VarCoords(T, TX)         ; add meta data
-  copy_VarCoords(T, TY) 
-  TX@long_name = "TX"
- ;TX@long_name = "TX: gradsg"
-  TX@units     = "K/s"
-  TY@long_name = "TY"
- ;TY@long_name = "TY: gradsg"
-  TY@units     = "K/s"
 
  ;print("")
  ;printMinMax(TX,False)
@@ -78,6 +57,12 @@ begin
  PX = plst[0]
  PY = plst[1]
  delete(plst)
+
+ PX = smth9_Wrap(PX, 0.50, 0.25, True)
+ PY = smth9_Wrap(PY, 0.50, 0.25, True)
+
+ PX = smth9_Wrap(PX, 0.50, 0.25, True)
+ PY = smth9_Wrap(PY, 0.50, 0.25, True)
 
  d2p = uv2dvF_Wrap(PX,PY)
 

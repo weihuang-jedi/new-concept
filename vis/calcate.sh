@@ -15,10 +15,10 @@
 
  cd /work2/noaa/gsienkf/weihuang/gfs/vis
 
-#ncl compute_grad_catalog.ncl \
-#   'diri="/work2/noaa/gsienkf/weihuang/gfs/data/annual/"' \
-#   'fili="hl_annual_mean_gfs_4_2022.nc"' \
-#   'filo="annual_grad_cate.nc"'
+ ncl compute_grad_catalog.ncl \
+    'diri="/work2/noaa/gsienkf/weihuang/gfs/data/annual/"' \
+    'fili="hl_annual_mean_gfs_4_2022.nc"' \
+    'filo="annual_grad_cate.nc"'
 
  monthlist=(01  02  03  04  05  06  07  08  09  10  11  12)
  name_list=(jan feb mar apr may jun jul aug sep oct nov dec)
@@ -45,7 +45,6 @@
      fi
    done
  done
-
 
  ncl compute_grad_catalog.ncl \
 	'diri="/work2/noaa/gsienkf/weihuang/gfs/data/dec2021/"' \

@@ -49,58 +49,30 @@ undef ("get_gradient")
 function get_gradient(T:float)
 begin
   dimT = dimsizes(T)
-  nlat = dimT(0)
-  mlon = dimT(1)
 
- ;print(nlat)
- ;print(mlon)
+  T = smth9_Wrap(T, 0.50, 0.25, True)
+  T = smth9_Wrap(T, 0.50, 0.25, True)
 
-  rad   = 4.*atan(1.)/180.
-  lat   = T&lat
-  lon   = T&lon
-
-  re    = 6.37122e6                      ; spherical earth
-  con   = re*rad                         ; one deg lat = 111198.8 meters
-  scly  = 1e5                            ; scale => nicer plots
-  sclx  = 1e5  
-  
 ;************************************************
 ; SPHERICAL HARMONICS:
 ; Use "highly accurate" spherical harmonics procedure (gradsg)
 ; to compute zonal (X) and meridional (Y) gradients.
 ;************************************************
 ; pre-allocate space for return gradients
-  TX = new( dimT, typeof(T), getFillValue(T) )  ; lon=>X
-  TY = new( dimT, typeof(T), getFillValue(T) )  ; lat=>Y
+  TX = new( dimT, typeof(T), getFillValue(T) )
+  TY = new( dimT, typeof(T), getFillValue(T) )
 
   gradsg(T, TX, TY)     ; procedure for gaussian grids
 
-  copy_VarCoords(T, TX)         ; add meta data
-  copy_VarCoords(T, TY) 
-  TX@long_name = "TX"
- ;TX@long_name = "TX: gradsg"
-  TX@units     = "K/s"
-  TY@long_name = "TY"
- ;TY@long_name = "TY: gradsg"
-  TY@units     = "K/s"
+  TX = smth9_Wrap(TX, 0.50, 0.25, True)
+  TX = smth9_Wrap(TX, 0.50, 0.25, True)
+
+  TY = smth9_Wrap(TY, 0.50, 0.25, True)
+  TY = smth9_Wrap(TY, 0.50, 0.25, True)
 
  ;print("")
  ;printMinMax(TX,False)
  ;printMinMax(TY,True )          ; unscaled
- ;print("")
-
-;************************************************
-; PLOTS:  SCALE gradients  for graphical esthetics
-;************************************************
-
-  TX = TX*sclx
-  TY = TY*scly
-
- ;print("")
- ;print("=====> scaled values <=====")
- ;print("")
- ;printMinMax(TX,False)
- ;printMinMax(TY, True)          ; scaled
  ;print("")
 
   return [/TX, TY/]
@@ -108,25 +80,13 @@ end
 
 ;************************************************
 undef("gen_plot")
-procedure gen_plot(fb:file, f1:file, plottype:string, level:integer)
+procedure gen_plot(f:file, plottype:string, level:integer)
 begin
-  Tb = fb->T(level, :, :)
-  Pb = fb->P(level, :, :)
-  Rhob = Pb / (287.0*Tb)
+  T = f->T(level, :, :)
+  P = f->P(level, :, :)
+  Rho = P / (287.0*T)
 
-  T1 = f1->T(level, :, :)
-  P1 = f1->P(level, :, :)
-  Rho1 = P1 / (287.0*T1)
-
-  T = T1 - Tb
-  P = P1 - Pb
-  Rho = Rho1 - Rhob
-
-  copy_VarCoords(Tb, T)
-  copy_VarCoords(Pb, P)
-  copy_VarCoords(Tb, Rho)
-
-  delete([/Tb, Pb, Rhob, T1, P1, Rho1/])
+  copy_VarCoords(T, Rho)
 
   T@long_name = "T"                     ; short name for plot labeling clarity
 
@@ -134,7 +94,7 @@ begin
  ;printMinMax(T,True)
  ;print("")
 
-  alt = fb->alt
+  alt = f->alt
   hgt = toint(alt(level))
 
   imgname = "catelog_at_" + tostring(hgt) + "meter"
@@ -145,18 +105,11 @@ begin
  TY = tlst[1]
  delete(tlst)
 
- d2t = uv2dvF_Wrap(TX,TY)
-
 ;************************************************
  plst = get_gradient(P)
  PX = plst[0]
  PY = plst[1]
  delete(plst)
-
- d2p = uv2dvF_Wrap(PX,PY)
-
- PX = 0.01*PX
- PY = 0.01*PY
 
 ;plot_gradient(PX, PY)
 
@@ -170,40 +123,16 @@ begin
  RY = rlst[1]
  delete(rlst)
 
- d2r = uv2dvF_Wrap(RX, RY)
-
- RX = 500.0*RX
- RY = 500.0*RY
-
 ;plot_gradient(RX, RY)
 
- d2t = 1.0e4*d2t
- d2p = 1.0e2*d2p
- d2r = 1.0e6*d2r
-
- d2t@long_name = "T-laplase"
- d2p@long_name = "P-laplase"
- d2r@long_name = "Rho-laplase"
-
-;print("")
-;printMinMax(d2t,False)
-;printMinMax(d2p, True)
-;printMinMax(d2r, True)
-
-;plot_gradient(d2p, d2r)
-;plot_gradient(d2t, d2r)
-
 ;----------------------------------------------------------------------
-;WHERE(x < 0) x = x + 256                     ; f90 WHERE statement
-;x = where(x.lt.0, x+256, x)                ; NCL
-
  dtdr = TX*RX + TY*RY
  dtdp = TX*PX + TY*PY
+ d2p = uv2dvF_Wrap(PX,PY)
+;d2p = smth9_Wrap(d2p, 0.50, 0.25, True)
+;d2p = smth9_Wrap(d2p, 0.50, 0.25, True)
 
  dimT = dimsizes(T)
- nlat = dimT(0)
- mlon = dimT(1)
- ngrids = nlat * mlon
  opt  = new(dimT, integer, -9999)
  opt1 = new(dimT, integer, -9999)
  opt2 = new(dimT, integer, -9999)
@@ -226,12 +155,7 @@ begin
  cate = 0
 
 ;----------------------------------------------------------------------
- ngrids = nlat * mlon
- print(ngrids)
-
-;----------------------------------------------------------------------
 ;Cate 1:  dtdr >= 0, d2p <= 0
- ngrids = nlat * mlon
  opt1 = where(dtdr .ge. 0.0, 1, 0)
  opt2 = where(d2p .le. 0.0, 1, 0)
  opt = opt1*opt2
@@ -282,16 +206,15 @@ end
 ;plottype = "png"
  plottype = "x11"
 
- diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- filb = "hl_monthly_mean_gfs_4_202201_000.nc"
- fil1 = "hl_gfs_4_20220116_0000_000.nc"
- fb = addfile(diri+filb,"r")
- f1 = addfile(diri+fil1,"r")
+ dir = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
+;fil = "hl_monthly_mean_gfs_4_202201.nc"
+ fil = "hl_gfs_4_20220116_0000_000.nc"
+ f = addfile(dir+fil, "r")
 
- alt = fb->alt
+ alt = f->alt
  nalts = dimsizes(alt)
 
  do level = 20, nalts, 20
-    gen_plot(fb, f1, plottype, level)
+    gen_plot(f, plottype, level)
  end do
 

@@ -56,7 +56,7 @@ begin
   rtxt@txFontHeightF = 0.010 
                             ; 1 rows x 6 columns of text
   n  = -1
-  xx = 0.15                 ; arbitrary
+  xx = 0.20                 ; arbitrary
   do ncol=0,5
      yy = 0.20 
     do nrow=0,0
@@ -64,7 +64,7 @@ begin
        gsn_text_ndc (wks,info(n),xx,yy,rtxt)
        yy = yy - 3*rtxt@txFontHeightF
     end do
-     xx = xx + 0.10 
+     xx = xx + 0.11 
   end do
   draw(plot)
   frame(wks)
