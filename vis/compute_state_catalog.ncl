@@ -105,26 +105,29 @@ begin
 end
 
 ;----------------------------------------------------------------------
- if(isdefined(diri)) then
+;if(isdefined(diri)) then
    dirname = diri
- else
-   dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
- end if
+;else
+;  dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
+;end if
 
- if(isdefined(fili)) then
+;if(isdefined(fili)) then
    finame = fili
- else
-   finame = "hl_annual_mean_gfs_4_2022.nc"
- end if
+;else
+;  finame = "hl_annual_mean_gfs_4_2022.nc"
+;end if
 
- if(isdefined(filo)) then
+;if(isdefined(filo)) then
    foname = filo
- else
-   foname = "annaul_state_cate.nc"
- end if
+;else
+;  foname = "annual_state_cate.nc"
+;end if
 
  fi = dirname+finame
  fo = dirname+foname
+
+ print("fi = " + fi)
+ print("fo = " + fo)
 
  compute_state_catalog(fi, fo)
 

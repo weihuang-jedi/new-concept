@@ -4,7 +4,6 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import matplotlib.colors as colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import cartopy.crs as ccrs
@@ -17,6 +16,9 @@ import cartopy.mpl.ticker as cticker
 
 import netCDF4 as nc4
 
+import tkinter
+import matplotlib
+matplotlib.use('TkAgg')
 #=========================================================================
 class CrossSectionPlot():
   def __init__(self, debug=0, output=0):
@@ -27,9 +29,9 @@ class CrossSectionPlot():
 
  #------------------------------------------------------------------------
   def set_default(self):
-    self.imagename = 'sample.png'
+    self.imagename = 'annual_grad_catalog.png'
 
-    self.runname = 'SLP'
+    self.runname = 'CATALOG'
 
    #cmapname = coolwarm, bwr, rainbow, jet, seismic
    #self.cmapname = 'bwr'
@@ -52,46 +54,46 @@ class CrossSectionPlot():
     self.title = 'Atmospheric Catelog Cross Section'
 
  #------------------------------------------------------------------------
-  def plot(self, lats, alts, pvar):
-   #set up the plot
-    fig, ax = plt.subplots(nrows=1,ncols=1,
-                           figsize=(12,8))
+  def plot(self, lats, alts, pvar, ymax=10000.0):
+    fig, ax = plt.subplots(constrained_layout=True, figsize=(11,8.5))
+    levels = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+    colors = ('magenta', 'navy', 'orange', 'cyan', 'red', 'blue', 'brown')
+    X, Y = np.meshgrid(lats, alts)
+    cs = ax.contourf(X, Y, pvar, levels,
+                     colors=colors,
+                     origin='lower', extend='neither')
+    cs.cmap.set_under('magenta')
+    cs.cmap.set_over('blue')
 
-    print('\tpvar.shape = ', pvar.shape)
+    ax.set_title('Zonal Averaged Atmospheric Catalog')
 
-    vmin = np.min(pvar)
-    vmax = np.max(pvar)
+   #Axis customization
+    xticklabels = ['90S', '75S', '60S', '45S', '30S', '15S', '0',
+                   '15N', '30N', '45N', '60N', '75N', '90N']
+    ax.set_xticklabels(xticklabels)
+    plt.xticks(lats[::30], xticklabels)
+    ax.set_ylabel('Height (meter)')
 
-    pvar = pvar + 0.5
-    print('\tpvar min: %f, max: %f' %(vmin, vmax))
+    ytickpos = np.arange(0, ymax+1000, 1000)
+    yticklabels = []
+    for tick in ytickpos:
+      lbl = str(tick)
+      yticklabels.append(lbl)
+    ax.set_yticklabels(yticklabels)
+    plt.yticks(ytickpos, yticklabels)
 
-    cmap = colors.LinearSegmentedColormap.from_list("",
-           ["magenta", "navy", "orange", "cyan", "red","blue","brown"])
+   #Notice that the colorbar gets all the information it
+   #needs from the ContourSet object, cs.
+   #fig.colorbar(cs, location='bottom')
+   #fig.colorbar(cs, orientation='horizontal', ticklocation='auto',
+   #             extend='neither', ticks=ticks)
+    cb = fig.colorbar(cs, orientation='horizontal', extend='neither')
+    cblabel =    '1. Thermal High           2. Thermal Low           3. Warm High             '
+    cblabel = '%s 4. Cold Low               5. Warm Low              6. Cold High        ' %(cblabel)
+    cb.set_label(label=cblabel, weight='bold')
 
-    cs=ax.contourf(lats, alts, pvar,
-                   levels=self.clevs,
-                   alpha=self.alpha, cmap=cmap)
-
-    ax.set_title(self.title)
-
-   #Adjust the location of the subplots on the page to make room for the colorbar
-    fig.subplots_adjust(bottom=0.1, top=0.8, left=0.05, right=0.95,
-                        wspace=0.05, hspace=0.05)
-
-   #Add a colorbar axis at the bottom of the graph
-    cbar_ax = fig.add_axes([0.1, 0.1, 0.90, 0.05])
-
-   #Draw the colorbar
-    cbar=fig.colorbar(cs, cax=cbar_ax, pad=self.pad, ticks=self.cblevs,
-                      orientation='horizontal')
-
-    cbar.set_label(self.label, rotation=0)
-
-   #Add a big title at the top
-    plt.suptitle(self.title)
-
-    fig.canvas.draw()
-    plt.tight_layout()
+    plt.ylim(0, ymax)
+    plt.grid(True)
 
     if(self.output):
       if(self.imagename is None):
@@ -126,9 +128,8 @@ class CrossSectionPlot():
 if __name__== '__main__':
   debug = 1
   output = 0
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/vis'
- #datafile = '%s/stateCate.nc' %(datadir)
-  datafile = '%s/gradCate.nc' %(datadir)
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/annual'
+  datafile = '%s/annual_grad_cate.nc' %(datadir)
 
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile='])
   for o, a in opts:
