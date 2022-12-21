@@ -67,6 +67,8 @@ end
  ra = new(dims, typeof(rho))
  dz = new(dims, typeof(h))
 
+ hh = new((/dims(0)/), typeof(h))
+
  ra@units = "kg/kg"
 
  malt = dims(0)
@@ -76,6 +78,7 @@ end
  ta(0:malt-1,:,:) = 0.5*(t(0:malt-1,:,:) + t(1:malt,:,:))
  ra(0:malt-1,:,:) = 0.5*(rho(0:malt-1,:,:) + rho(1:malt,:,:))
  dz(0:malt-1,:,:) = z(1:malt,:,:) - z(0:malt-1,:,:)
+ hh(0:malt-1) = 0.5*(h(1:malt) + h(0:malt-1))
 
  ua = smth9_Wrap(ua, 0.50, 0.25, True)
  ua = smth9_Wrap(ua, 0.50, 0.25, True)
@@ -98,14 +101,7 @@ end
  print("Density flux components at each height level")
 ;Density flux components at each height level
  ur = ua*ra
- ur@long_name = "Zonal Density Flux [ur]"
- ur@units = "["+u@units+"]["+ra@units+"]"     ; [m/s][kg/m3]     
- copy_VarCoords(u(0:malt,:,:),ur)                        ; (level,lat,lon)
-
  vr = va*ra
- vr@long_name = "Meridional Density Flux [vr]"
- vr@units = "["+v@units+"]["+ra@units+"]" 
- copy_VarCoords(v(0:malt,:,:),vr)                        ; (level,lat,lon)
 
 ;print("-----")
 ;printVarSummary(ur)                         ; (level,lat,lon); (m/s)(kg/m3)
@@ -124,7 +120,13 @@ end
  duvr  = uv2dvF_Wrap(ur, vr)    ; (level,lat,lon)
  duvr@long_name = "Divergence of Density Flux"
  duvr@units     = "kg/(m2-s)"    ; (1/m)*[(m/s)(kg/m2)] => [kg/(m2-s)]
- copy_VarCoords(u, duvr)      ; (lat,lon)
+
+ duvr!0 = "alt"
+ duvr!1 = "lat"
+ duvr!2 = "lon"
+ duvr&alt = hh
+ duvr&lat = u&lat
+ duvr&lon = u&lon
 
  print("Mass weighted integration [sum] of the divergence of density flux")
 ;Mass weighted integration [sum] of the divergence of density flux
