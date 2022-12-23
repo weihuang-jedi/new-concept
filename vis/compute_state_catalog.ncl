@@ -73,7 +73,7 @@ begin
   cate = where(opt .gt. 0, 3, cate)
 
 ;----------------------------------------------------------------------
- ;Cate 4:  dtdr < 0, dtdp < 0, dp < 0   Thermal        Cold Low Dense
+ ;Cate 4:  dtdr < 0, dtdp >= 0, dp < 0   Thermal        Cold Low Dense
   opt3 = where(dp .lt. 0.0, 1, 0)
   opt = opt1*opt2*opt3
   cate = where(opt .gt. 0, 4, cate)
@@ -87,7 +87,7 @@ begin
 
 ;----------------------------------------------------------------------
  ;Cate 6:  dtdr < 0, dtdp < 0, dp < 0    Dynamic     Wamr Low  Thin
-  opt3 = where(dp .gt. 0.0, 1, 0)
+  opt3 = where(dp .lt. 0.0, 1, 0)
   opt = opt1*opt2*opt3
   cate = where(opt .gt. 0, 6, cate)
 

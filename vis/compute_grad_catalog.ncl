@@ -13,6 +13,7 @@ begin
   T = smth9_Wrap(T, 0.50, 0.25, True)
 
  ;pre-allocate space for return gradients
+  dimT = dimsizes(T)
   TX = new( dimT, typeof(T), getFillValue(T) )  ; lon=>X
   TY = new( dimT, typeof(T), getFillValue(T) )  ; lat=>Y
 
@@ -103,7 +104,7 @@ begin
  cate = where(opt .gt. 0, 2, cate)
 
 ;----------------------------------------------------------------------
-;Cate 3:  dtdr >= 0, dtdp >= 0, d2p <= 0
+;Cate 3:  dtdr < 0, dtdp >= 0, d2p <= 0
  opt1 = where(dtdr .lt. 0.0, 1, 0)
  opt2 = where(dtdp .ge. 0.0, 1, 0)
  opt3 = where(d2p .le. 0.0, 1, 0)
@@ -111,20 +112,20 @@ begin
  cate = where(opt .gt. 0, 3, cate)
 
 ;----------------------------------------------------------------------
-;Cate 4:  dtdr >= 0, dtdp >= 0, d2p > 0
+;Cate 4:  dtdr < 0, dtdp >= 0, d2p > 0
  opt3 = where(d2p .gt. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 4, cate)
 
 ;----------------------------------------------------------------------
-;Cate 5:  dtdr >= 0, dtdp < 0, d2p <= 0
+;Cate 5:  dtdr < 0, dtdp < 0, d2p <= 0
  opt2 = where(dtdp .lt. 0.0, 1, 0)
  opt3 = where(d2p .le. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 5, cate)
 
 ;----------------------------------------------------------------------
-;Cate 6:  dtdr >= 0, dtdp < 0, d2p > 0
+;Cate 6:  dtdr < 0, dtdp < 0, d2p > 0
  opt3 = where(d2p .gt. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 6, cate)

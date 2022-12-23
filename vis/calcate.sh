@@ -5,8 +5,8 @@
 #SBATCH -t 06:00:00
 #SBATCH -A gsienkf
 #SBATCH --partition=bigmem
-#SBATCH --job-name=interp
-#SBATCH --output=log.interp
+#SBATCH --job-name=gradcate
+#SBATCH --output=log.gradcate
 
  module load ncl
 
