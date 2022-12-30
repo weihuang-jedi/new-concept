@@ -59,7 +59,8 @@ class CrossSectionPlot():
     levels = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
     colors = ('magenta', 'navy', 'orange', 'cyan', 'red', 'blue', 'brown')
     X, Y = np.meshgrid(lats, alts)
-    cs = ax.contourf(X, Y, pvar, levels,
+    Z = pvar + 0.5
+    cs = ax.contourf(X, Y, Z, levels,
                      colors=colors,
                      origin='lower', extend='neither')
     cs.cmap.set_under('magenta')
@@ -98,18 +99,19 @@ class CrossSectionPlot():
     plt.ylim(0, ymax)
     plt.grid(True)
 
-   #if(self.output):
-   #  if(self.imagename is None):
-   #    imagename = 't_aspect.png'
-   #  else:
-   #    imagename = self.imagename
-   #  plt.savefig(imagename)
-   #  plt.close()
-   #else:
-   #  plt.show()
+    if(self.output):
+      if(self.imagename is None):
+        imagename = 't_aspect.png'
+      else:
+        imagename = self.imagename
+      plt.savefig(imagename)
+      plt.close()
+    else:
+      plt.show()
 
-    imagename = self.imagename
-    plt.savefig(imagename)
+   #imagename = self.imagename
+   #plt.savefig(imagename)
+   #plt.show()
 
   def set_label(self, label='Unit (C)'):
     self.label = label
@@ -136,12 +138,12 @@ if __name__== '__main__':
   output = 0
  #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/annual'
  #datafile = '%s/annual_grad_cate.nc' %(datadir)
- #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
- #datafile = '%s/state_cate_202112.nc' %(datadir)
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
+  datafile = '%s/state_cate_202112.nc' %(datadir)
  #datafile = '%s/grad_cate_202112.nc' %(datadir)
 
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
-  datafile = '%s/grad_cate_20220116_00.nc' %(datadir)
+ #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
+ #datafile = '%s/grad_cate_20220116_00.nc' %(datadir)
 
   title = 'Zonal Averaged Annual Atmospheric Catalog'
   imagename = 'zonal_averaged_annual.png'
@@ -181,18 +183,26 @@ if __name__== '__main__':
   csp.set_clevs(clevs=clevs)
   csp.set_cblevs(cblevs=cblevs)
 
-  cscate = cate[:,:,360]
-  title = 'gfs E180 Atmospheric Systems Catalog 20220116_00'
-  imagename = 'gfs_e180_dec2021.png'
-  print('title = ', title)
-  print('imagename = ', imagename)
-  csp.set_title(title)
-  csp.set_imagename(imagename)
+  for i in range(0, 720, 60):
+    lon = int(i/2) - 180
+    cscate = cate[:,:,i]
+   #title = 'gfs E180 Atmospheric Systems Catalog 20220116_00'
+    if(lon < 0):
+      title = 'gfs Atmospheric Systems Catalog DEC 2021 at Lon %dW' %(-lon)
+      imagename = 'gfs_dec2021_at_lon_%dW.png' %(-lon)
+    else:
+      title = 'gfs Atmospheric Systems Catalog DEC 2021 at Lon %dE' %(lon)
+      imagename = 'gfs_dec2021_at_lon_%dE.png' %(lon)
+    print('title = ', title)
+    print('imagename = ', imagename)
+    csp.set_title(title)
+    csp.set_imagename(imagename)
 
-  csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
+    csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
 
   cscate = np.average(cate, axis=2)
-  title = 'gfs Zonal Averaged Atmospheric Systems Catalog 20220116_00'
+ #title = 'gfs Zonal Averaged Atmospheric Systems Catalog 20220116_00'
+  title = 'gfs Zonal Averaged Atmospheric Systems Catalog DEC 2021'
   imagename = 'gfs_zonal_averaged_dec2021.png'
   print('title = ', title)
   print('imagename = ', imagename)

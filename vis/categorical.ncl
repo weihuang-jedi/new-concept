@@ -1,6 +1,6 @@
 ;----------------------------------------------------------------------
 undef("plot_categorical")
-procedure plot_categorical(x:float, plottype:string, imgname:string, hgt:float)
+procedure plot_categorical(x:float, plottype:string, imgname:string, title:string, hgt:float)
 begin
   info  = (/ " 1 Thermal High", \
              " 2 Thermal Low ", \
@@ -34,12 +34,12 @@ begin
   res@cnLevelSelectionMode = "ExplicitLevels"              ; set explict contour levels
  ;res@cnLevels         = integertobyte( ispan(1,ninfo-1,1) ) ; one less than ninfo
   res@cnLevels         = (/2, 3, 4, 5, 6/)
-  res@cnFillColors = (/"Magenta", "Blue", "Orange", "Cyan", "Red", "Green"/)
+  res@cnFillColors = (/"Magenta", "Navyblue", "Orange", "Cyan", "Red", "Blue"/)
   res@lbLabelPosition  = "Center"           ; label position
   res@lbLabelAlignment = "BoxCenters"       ; label orientation
   res@lbLabelStrings   = ispan(1,ninfo,1)  
 
-  res@tiMainString     = "Thermal-Dynamic Category at " + tostring(hgt) + "_meter"
+  res@tiMainString     = title
 
   res@pmLabelBarHeightF        =  0.075
  ;res@pmLabelBarWidthF         =  0.60      ; default is 0.6
@@ -49,6 +49,8 @@ begin
   res@mpFillOn         = False
 
  ;res@gsnRightString   = fili
+
+  x = lonFlip(x)
   plot = gsn_csm_contour_map_ce(wks, x, res) ; create plot
 
   rtxt = True
@@ -71,8 +73,83 @@ begin
 end
 
 ;----------------------------------------------------------------------
+undef("plot_avg_cate_section")
+procedure plot_avg_cate_section(x:float, plottype:string, imgname:string, title:string)
+begin
+  info  = (/ " 1 Thermal High", \
+             " 2 Thermal Low ", \
+             " 3 Warm High   ", \
+             " 4 Cold Low    ", \
+             " 5 Warm Low    ", \
+             " 6 Cold High   " /)
+  ninfo = dimsizes(info)
+
+;************************************************
+; create plot
+;************************************************
+  wks = gsn_open_wks(plottype, imgname)
+
+  print("Imagename: " + imgname)
+
+  res                  = True                ; plot mods desired
+  res@gsnDraw          = False
+  res@gsnFrame         = False
+  res@gsnMaximize      = True 
+
+  res@cnFillOn         = True               ; color Fill 
+  res@cnFillMode       = "RasterFill"       ; Raster Mode
+  res@cnLinesOn        = False              ; Turn off contour lines
+
+  res@cnFillPalette     = "default"
+  res@cnSpanFillPalette = False
+
+  res@cnLineLabelsOn   = False              ; Turn off contour line labels
+
+  res@cnLevelSelectionMode = "ExplicitLevels"              ; set explict contour levels
+ ;res@cnLevels         = integertobyte( ispan(1,ninfo-1,1) ) ; one less than ninfo
+  res@cnLevels         = (/2, 3, 4, 5, 6/)
+  res@cnFillColors = (/"Magenta", "Navyblue", "Orange", "Cyan", "Red", "Blue"/)
+  res@lbLabelPosition  = "Center"           ; label position
+  res@lbLabelAlignment = "BoxCenters"       ; label orientation
+  res@lbLabelStrings   = ispan(1,ninfo,1)  
+
+  res@tiMainString     = title
+
+  res@pmLabelBarHeightF        =  0.075
+ ;res@pmLabelBarWidthF         =  0.60      ; default is 0.6
+ ;res@pmLabelBarOrthogonalPosF = -0.0005    ; move up smidge
+
+  res@mpFillOn         = False
+ ;res@gsnRightString   = fili
+
+  printVarSummary(x)
+
+  sect = dim_avg_Wrap(x) 
+  plot = gsn_csm_pres_hgt(wks,sect(0:300,:),res) ; create plot
+
+  rtxt = True
+  rtxt@txJust        = "CenterLeft"
+  rtxt@txFontHeightF = 0.010 
+                            ; 1 rows x 6 columns of text
+  n  = -1
+  xx = 0.18                 ; arbitrary
+  do ncol=0,5
+     yy = 0.025 
+    do nrow=0,0
+       n = n+1
+       gsn_text_ndc (wks,info(n),xx,yy,rtxt)
+       yy = yy - 3*rtxt@txFontHeightF
+    end do
+     xx = xx + 0.12
+  end do
+  draw(plot)
+  frame(wks)
+end
+
+;----------------------------------------------------------------------
 undef("plot_cate_section")
-procedure plot_cate_section(x:float, plottype:string, imgname:string)
+procedure plot_cate_section(x:float, plottype:string, lon:integer, \
+                            imgname:string, title:string)
 begin
   info  = (/ " 1 Thermal High", \
              " 2 Thermal Low ", \
@@ -106,26 +183,24 @@ begin
   res@cnLevelSelectionMode = "ExplicitLevels"              ; set explict contour levels
  ;res@cnLevels         = integertobyte( ispan(1,ninfo-1,1) ) ; one less than ninfo
   res@cnLevels         = (/2, 3, 4, 5, 6/)
-  res@cnFillColors = (/"Magenta", "Blue", "Orange", "Cyan", "Red", "Green"/)
+  res@cnFillColors = (/"Magenta", "Navyblue", "Orange", "Cyan", "Red", "Blue"/)
   res@lbLabelPosition  = "Center"           ; label position
   res@lbLabelAlignment = "BoxCenters"       ; label orientation
   res@lbLabelStrings   = ispan(1,ninfo,1)  
 
-  res@tiMainString     = "Zonal Averaged Atmospheric Catalog"
+  res@tiMainString     = title
 
   res@pmLabelBarHeightF        =  0.075
  ;res@pmLabelBarWidthF         =  0.60      ; default is 0.6
  ;res@pmLabelBarOrthogonalPosF = -0.0005    ; move up smidge
 
-  res@mpCenterLonF     = 0                  ; set map center
   res@mpFillOn         = False
-
  ;res@gsnRightString   = fili
 
   printVarSummary(x)
 
-  sect = dim_avg_Wrap(x) 
-  plot = gsn_csm_pres_hgt(wks,sect(0:200,:),res) ; create plot
+  sect = x(:, :, lon)
+  plot = gsn_csm_pres_hgt(wks,sect(0:300,:),res) ; create plot
 
   rtxt = True
   rtxt@txJust        = "CenterLeft"

@@ -113,7 +113,11 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
-  infile = 'state_cate_202112.nc'
+ #infile = 'state_cate_202112.nc'
+  infile = 'my_state_cate_202112.nc'
+
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
+  infile = 'my_state_cate_20220116_00.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])

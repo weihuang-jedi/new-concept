@@ -1,3 +1,9 @@
 pyspharm
 *.png
 *.nc
+dfc.log
+geostationary.py
+gradient_1.ncl.ori
+panel.py
+plotlap.py
+

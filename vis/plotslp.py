@@ -13,7 +13,7 @@ import tkinter
 import matplotlib
 matplotlib.use('TkAgg')
 #---------------------------------------------------------
-def plotit(x, y, z, title):
+def plotfull(x, y, z, title):
   X, Y = np.meshgrid(x, y)
 
   print('Plotting ', title)
@@ -42,6 +42,32 @@ def plotit(x, y, z, title):
   plt.savefig(imagename)
   plt.show()
 
+#---------------------------------------------------------
+def plotdiff(x, y, z, title):
+  X, Y = np.meshgrid(x, y)
+
+  print('Plotting ', title)
+
+  fig = plt.figure(figsize=(10, 5))
+  ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+  proj = ccrs.PlateCarree()
+
+ #cs = plt.contourf(X, Y, z, cmap ="jet")
+ #cmap='nipy_spectral'
+  cmap='jet'
+  cs = ax.contourf(X, Y, z,
+                   transform=proj, cmap=cmap)
+ #cbar = plt.colorbar(cs, orientation='horizontal', shrink=0.85)
+  cbar = plt.colorbar(cs, ax=ax, orientation='horizontal', pad=.1, fraction=0.06,)
+  ax.set_extent([-180, 180, -90, 90], crs=proj)
+  ax.coastlines(resolution='auto', color='k')
+  ax.gridlines(color='lightgrey', linestyle='-', draw_labels=True)
+  ax.set_global()
+  plt.title(title)
+  imagename = '%s.png' %(title.replace(' ', '_'))
+  plt.savefig(imagename)
+  plt.show()
+
 #=========================================================================
 class PlotVariable():
   def __init__(self, debug=0):
@@ -52,19 +78,49 @@ class PlotVariable():
     self.dimlist = ('time', 'level', 'latitude', 'longitude')
 
  #-----------------------------------------------------------------------------------------
-  def process(self, flnm=None):
-    if(os.path.exists(flnm)):
-      print('Processing %s' %(flnm))
-      ncf = nc4.Dataset(flnm, 'r')
+  def process(self, yfile=None, mfile=None, dfile=None):
+    if(os.path.exists(yfile)):
+      print('Processing %s' %(yfile))
+      ncyf = nc4.Dataset(yfile, 'r')
     else:
-      print('file: %s does not exist. Stop' %(flnm))
+      print('file: %s does not exist. Stop' %(yfile))
       sys.exit(-1)
 
-    lat = ncf.variables['lat_0'][:]
-    lon = ncf.variables['lon_0'][:]
-    pmsl = 0.01*ncf.variables['PRMSL_P0_L101_GLL0'][:,:]
-    title = 'Pressure reduced to MSL Dec 2021 units: hPa'
-    plotit(lon, lat, pmsl, title)
+    if(os.path.exists(mfile)):
+      print('Processing %s' %(mfile))
+      ncmf = nc4.Dataset(mfile, 'r')
+    else:
+      print('file: %s does not exist. Stop' %(mfile))
+      sys.exit(-1)
+
+    if(os.path.exists(dfile)):
+      print('Processing %s' %(dfile))
+      ncdf = nc4.Dataset(dfile, 'r')
+    else:
+      print('file: %s does not exist. Stop' %(dfile))
+      sys.exit(-1)
+
+    lat = ncyf.variables['lat_0'][:]
+    lon = ncyf.variables['lon_0'][:]
+    ypmsl = 0.01*ncyf.variables['PRMSL_P0_L101_GLL0'][:,:]
+    title = 'annual Pressure reduced to MSL Jan 2022 units: hPa'
+    plotfull(lon, lat, ypmsl, title)
+
+    mpmsl = 0.01*ncmf.variables['PRMSL_P0_L101_GLL0'][:,:]
+    title = 'month Pressure reduced to MSL Jan 2022 units: hPa'
+    plotfull(lon, lat, mpmsl, title)
+
+    dpmsl = 0.01*ncdf.variables['PRMSL_P0_L101_GLL0'][:,:]
+    title = 'Pressure reduced to MSL Jan 16 00Z 2022 units: hPa'
+    plotfull(lon, lat, dpmsl, title)
+
+    mmy_pmsl = mpmsl - ypmsl
+    title = 'month-annual Pressure reduced to MSL Jan 2022 units: hPa'
+    plotdiff(lon, lat, mmy_pmsl, title)
+
+    dmm_pmsl = dpmsl - mpmsl
+    title = 'day-month Pressure reduced to MSL Jan 2022 units: hPa'
+    plotdiff(lon, lat, dmm_pmsl, title)
 
     ncf.close()
 
@@ -72,8 +128,14 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
-  infile = 'monthly_mean_gfs_4_202112.nc'
+  ydir = '/work2/noaa/gsienkf/weihuang/gfs/data/annual'
+  yfile = 'annual_mean_gfs_4_2022.nc'
+
+  mdir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
+  mfile = 'monthly_mean_gfs_4_202201.nc'
+
+  ddir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
+  dfile = 'gfs_4_20220116_0000_000.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])
@@ -89,6 +151,8 @@ if __name__== '__main__':
 
  #-----------------------------------------------------------------------------------------
   pv = PlotVariable(debug=debug)
-  flnm = '%s/%s' %(datadir, infile)
-  pv.process(flnm=flnm)
+  yf = '%s/%s' %(ydir, yfile)
+  mf = '%s/%s' %(mdir, mfile)
+  df = '%s/%s' %(ddir, dfile)
+  pv.process(yfile=yf, mfile=mf, dfile=df)
 
