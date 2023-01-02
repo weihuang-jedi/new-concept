@@ -138,12 +138,12 @@ if __name__== '__main__':
   output = 0
  #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/annual'
  #datafile = '%s/annual_grad_cate.nc' %(datadir)
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
-  datafile = '%s/state_cate_202112.nc' %(datadir)
- #datafile = '%s/grad_cate_202112.nc' %(datadir)
-
  #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
  #datafile = '%s/grad_cate_20220116_00.nc' %(datadir)
+ #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
+ #datafile = '%s/state_cate_202112.nc' %(datadir)
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/'
+  datafile = '%s/grad_cate_20220116_00.nc' %(datadir)
 
   title = 'Zonal Averaged Annual Atmospheric Catalog'
   imagename = 'zonal_averaged_annual.png'
@@ -201,9 +201,10 @@ if __name__== '__main__':
     csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
 
   cscate = np.average(cate, axis=2)
- #title = 'gfs Zonal Averaged Atmospheric Systems Catalog 20220116_00'
-  title = 'gfs Zonal Averaged Atmospheric Systems Catalog DEC 2021'
-  imagename = 'gfs_zonal_averaged_dec2021.png'
+ #title = 'gfs Zonal Averaged Atmospheric Systems Catalog DEC 2021'
+ #imagename = 'gfs_zonal_averaged_dec2021.png'
+  title = 'gfs Zonal Averaged Atmospheric Systems Catalog 20220116_00Z'
+  imagename = 'gfs_zonal_averaged_20220116_00Z.png'
   print('title = ', title)
   print('imagename = ', imagename)
   csp.set_title(title)
