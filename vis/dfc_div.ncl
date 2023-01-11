@@ -36,31 +36,34 @@
  dims(0) = dims(0) - 1
  ua = new(dims, typeof(u))
  va = new(dims, typeof(v))
- ta = new(dims, typeof(t))
+;ta = new(dims, typeof(t))
  ra = new(dims, typeof(rho))
  dz = new(dims, typeof(h))
 
  ra@units = "kg/kg"
 
+ delete(t)
+ delete(p)
+
  malt = dims(0)
 
  ua(0:malt-1,:,:) = 0.5*(u(0:malt-1,:,:) + u(1:malt,:,:))
  va(0:malt-1,:,:) = 0.5*(v(0:malt-1,:,:) + v(1:malt,:,:))
- ta(0:malt-1,:,:) = 0.5*(t(0:malt-1,:,:) + t(1:malt,:,:))
+;ta(0:malt-1,:,:) = 0.5*(t(0:malt-1,:,:) + t(1:malt,:,:))
  ra(0:malt-1,:,:) = 0.5*(rho(0:malt-1,:,:) + rho(1:malt,:,:))
  dz(0:malt-1,:,:) = z(1:malt,:,:) - z(0:malt-1,:,:)
 
- ua = smth9_Wrap(ua, 0.50, 0.25, True)
- ua = smth9_Wrap(ua, 0.50, 0.25, True)
+;ua = smth9_Wrap(ua, 0.50, 0.25, True)
+;ua = smth9_Wrap(ua, 0.50, 0.25, True)
 
- va = smth9_Wrap(va, 0.50, 0.25, True)
- va = smth9_Wrap(va, 0.50, 0.25, True)
+;va = smth9_Wrap(va, 0.50, 0.25, True)
+;va = smth9_Wrap(va, 0.50, 0.25, True)
 
- ta = smth9_Wrap(ta, 0.50, 0.25, True)
- ta = smth9_Wrap(ta, 0.50, 0.25, True)
+;ta = smth9_Wrap(ta, 0.50, 0.25, True)
+;ta = smth9_Wrap(ta, 0.50, 0.25, True)
 
- ra = smth9_Wrap(ra, 0.50, 0.25, True)
- ra = smth9_Wrap(ra, 0.50, 0.25, True)
+;ra = smth9_Wrap(ra, 0.50, 0.25, True)
+;ra = smth9_Wrap(ra, 0.50, 0.25, True)
 
 ;printVarSummary(ua)
 ;printVarSummary(va)
@@ -148,8 +151,8 @@
 ;---------------------------------------------------------------------------------------
  plot := new(2,graphic)
 
-;wks   = gsn_open_wks("png","dfc_div")        ; send graphics to PNG file
- wks   = gsn_open_wks("x11","dfc_div")        ; send graphics to PNG file
+ wks   = gsn_open_wks("png","dfc_div")        ; send graphics to PNG file
+;wks   = gsn_open_wks("x11","dfc_div")        ; send graphics to PNG file
  
 ;Density Transport [ur, vr] at a specified pressure level
 

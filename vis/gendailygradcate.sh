@@ -15,7 +15,7 @@
 
  cd /work2/noaa/gsienkf/weihuang/gfs/vis
 
- ncl compute_grad_catalog.ncl \
+ ncl compute_grad_daily_catalog.ncl \
     'diri="/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"' \
     'fili="hl_gfs_4_20220116_0000_000.nc"' \
     'filo="grad_cate_20220116_00.nc"'

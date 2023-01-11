@@ -2,13 +2,17 @@ load "categorical.ncl"
 
 ;************************************************
 undef("gen_plot")
-procedure gen_plot(f:file, plottype:string, level:integer)
+procedure gen_plot(f:file, fb:file, plottype:string, level:integer)
 begin
   T = f->T(level, :, :)
   P = f->P(level, :, :)
   Rho = P / (287.0*T)
 
   copy_VarCoords(T, Rho)
+
+  Tb = fb->T(level, :, :)
+  Pb = fb->P(level, :, :)
+  Rhob = Pb / (287.0*Tb)
 
   T@long_name = "T"                     ; short name for plot labeling clarity
 
@@ -18,21 +22,11 @@ begin
 
   alt = f->alt
   hgt = toint(alt(level))
-
-  imgname = "catelog_at_" + tostring(hgt) + "meter"
   
 ;----------------------------------------------------------------------
- tmean = avg(T)
- pmean = avg(P)
- rmean = avg(Rho)
-
- print(tmean)
- print(pmean)
- print(rmean)
-
- dt = T - tmean
- dp = P - pmean
- dr = Rho - rmean
+ dt = T - Tb
+ dp = P - Pb
+ dr = Rho - Rhob
 
  dtdr = dt*dr
  dtdp = dt*dp
@@ -99,19 +93,22 @@ begin
  cate = where(opt .gt. 0, 6, cate)
 ;----------------------------------------------------------------------
  pvar = tofloat(cate)
-;pvar = smth9_Wrap(pvar, 0.50, -0.25, True)
-;pvar = smth9_Wrap(pvar, 0.50, 0.25, True)
-;cate = toint(pvar + 0.5)
-;pvar = tofloat(cate)
- plot_categorical(pvar, plottype, imgname, hgt)
+ title = "State catelog at " + tostring(hgt) + "meter"
+ imgname = "state_catelog_at_" + tostring(hgt) + "meter"
+ plot_categorical(pvar, plottype, imgname, title, hgt)
 end
 
 ;************************************************
 ;plottype = "png"
  plottype = "x11"
 
+;dirb = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
+;filb = "hl_annual_mean_gfs_4_2022.nc"
+ dirb = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
+ filb = "hl_monthly_mean_gfs_4_202201.nc"
+ fb = addfile(dirb+filb,"r")
+
  diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
-;fili = "hl_monthly_mean_gfs_4_202201_000.nc"
  fili = "hl_gfs_4_20220116_0000_000.nc"
  f = addfile(diri+fili,"r")
 
@@ -119,6 +116,6 @@ end
  nalts = dimsizes(alt)
 
  do level = 20, nalts, 20
-    gen_plot(f, plottype, level)
+    gen_plot(f, fb, plottype, level)
  end do
 
