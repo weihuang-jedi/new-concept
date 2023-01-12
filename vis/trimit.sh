@@ -2,9 +2,9 @@
 
  set -x
 
- for fl in `ls gfs_grad*.png`
+ for fl in `ls state*.png`
  do
-   convert -trim -geometry 2500x2500 +repage -border 8 -bordercolor white \
+   convert -trim -geometry 1200x900 +repage -border 8 -bordercolor white \
 	-background white -flatten $fl trimed_$fl
    rm -f $fl
  done
