@@ -23,8 +23,8 @@
 #monthlist=(01  02  03  04  05  06  07  08  09  10  11  12)
 #name_list=(jan feb mar apr may jun jul aug sep oct nov dec)
 
- monthlist=(02  03  05  06  08  09  11)
- name_list=(feb mar may jun aug sep nov)
+ monthlist=(12)
+ name_list=(dec)
 
  for j in ${!monthlist[@]}
  do
@@ -77,10 +77,10 @@
           --infile=monthly_mean_gfs_4_${ym}_000.nc
  done
 
- mkdir -p /work2/noaa/gsienkf/weihuang/gfs/data/annual
- cd /work2/noaa/gsienkf/weihuang/gfs/data
+#mkdir -p /work2/noaa/gsienkf/weihuang/gfs/data/annual
+#cd /work2/noaa/gsienkf/weihuang/gfs/data
 
- ifiles=`ls */monthly_mean_gfs_4_202[12][01][1234567890]_000.nc`
- ofile=annual_mean_gfs_4_${year}.nc
- cdo ensmean $ifiles $ofile
+#ifiles=`ls */monthly_mean_gfs_4_202[12][01][1234567890]_000.nc`
+#ofile=annual_mean_gfs_4_${year}.nc
+#cdo ensmean $ifiles $ofile
 
