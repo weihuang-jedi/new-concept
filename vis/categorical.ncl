@@ -1,9 +1,23 @@
+undef("readinfo")
+function readinfo(filename:string)
+begin
+ ;Read data into a one-dimensional string array of unknown length:
+  filename = "datainfo.txt"
+  info     = asciiread(filename,-1,"string")
+  nlines   = dimsizes(info)
+
+  print("The <" + filename + "> has " + nlines + " lines.")
+  print("<" + info + ">")    ; Print the lines
+
+  return info
+end
+
 ;----------------------------------------------------------------------
 undef("plot_categorical")
 procedure plot_categorical(x:float, plottype:string, imgname:string, title:string, hgt:float)
 begin
-  info  = (/ " 1 Thermal High", \
-             " 2 Thermal Low ", \
+  info  = (/ " 1 ThermDyn High", \
+             " 2 ThermDyn Low ", \
              " 3 Warm High   ", \
              " 4 Cold Low    ", \
              " 5 Warm Low    ", \
@@ -76,8 +90,8 @@ end
 undef("plot_avg_cate_section")
 procedure plot_avg_cate_section(x:float, plottype:string, imgname:string, title:string)
 begin
-  info  = (/ " 1 Thermal High", \
-             " 2 Thermal Low ", \
+  info  = (/ " 1 ThermDyn High", \
+             " 2 ThermDyn Low ", \
              " 3 Warm High   ", \
              " 4 Cold Low    ", \
              " 5 Warm Low    ", \
@@ -151,8 +165,8 @@ undef("plot_cate_section")
 procedure plot_cate_section(x:float, plottype:string, lon:integer, \
                             imgname:string, title:string)
 begin
-  info  = (/ " 1 Thermal High", \
-             " 2 Thermal Low ", \
+  info  = (/ " 1 ThermDyn High", \
+             " 2 ThermDyn Low ", \
              " 3 Warm High   ", \
              " 4 Cold Low    ", \
              " 5 Warm Low    ", \
@@ -266,8 +280,8 @@ undef("plot_categorical_polar")
 procedure plot_categorical_polar(x:float, plottype:string, imgname:string,
                                  title:string, hgt:float, hemisphere:string)
 begin
-  info  = (/ " 1 Thermal High", \
-             " 2 Thermal Low ", \
+  info  = (/ " 1 ThermDyn High", \
+             " 2 ThermDyn Low ", \
              " 3 Warm High   ", \
              " 4 Cold Low    ", \
              " 5 Warm Low    ", \

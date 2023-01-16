@@ -25,6 +25,11 @@ EOFA
 
  ncl plotgradcate-direct.ncl
  ncl plotgradcate-direct-polar.ncl
+ python crosssection.py \
+   --datafile=/work2/noaa/gsienkf/weihuang/gfs/data/annual/annual_grad_cate.nc \
+   --imagename=annual_2022 \
+   --title='Annual 2022' \
+   --output=1
 
  mkdir -p images/annual
 
@@ -65,6 +70,11 @@ ${mname} ${year}
 EOFB
          ncl plotgradcate-direct.ncl
          ncl plotgradcate-direct-polar.ncl
+         python crosssection.py \
+           --datafile=${datadir}/${ofile} \
+           --imagename=${mname}_${year}_grad_cate \
+           --title='${mname} ${year}' \
+           --output=1
 
          mkdir -p images/${mname}${year}
 

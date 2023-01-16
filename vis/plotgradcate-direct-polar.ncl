@@ -1,22 +1,6 @@
 load "categorical.ncl"
 
 ;---------------------------------------------------------------------
-undef("readinfo")
-function readinfo(filename:string)
-begin
- ;Read data into a one-dimensional string array of unknown length:
-  filename = "datainfo.txt"
-  info     = asciiread(filename,-1,"string")
- ;nlines   = dimsizes(info)
-
- ;print("The info in '" + filename + "' has " + nlines + " lines.")
- ;print("This includes the title and the author.")
- ;print(info)    ; Print the lines
-
-  return info
-end
-
-;---------------------------------------------------------------------
 undef("gen_plot")
 procedure gen_plot(f:file, plottype:string, imgstr:string, \
                    titlestr:string, hemisphere:string)

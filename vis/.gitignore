@@ -1,4 +1,5 @@
 pyspharm
+*.txt
 *.png
 *.nc
 dfc.log

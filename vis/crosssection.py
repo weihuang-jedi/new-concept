@@ -16,9 +16,9 @@ import cartopy.mpl.ticker as cticker
 
 import netCDF4 as nc4
 
-import tkinter
-import matplotlib
-matplotlib.use('TkAgg')
+#import tkinter
+#import matplotlib
+#matplotlib.use('TkAgg')
 #=========================================================================
 class CrossSectionPlot():
   def __init__(self, debug=0, output=0):
@@ -92,8 +92,8 @@ class CrossSectionPlot():
    #fig.colorbar(cs, orientation='horizontal', ticklocation='auto',
    #             extend='neither', ticks=ticks)
     cb = fig.colorbar(cs, orientation='horizontal', extend='neither')
-    cblabel =    '1. Thermal High           2. Thermal Low           3. Warm High             '
-    cblabel = '%s 4. Cold Low               5. Warm Low              6. Cold High        ' %(cblabel)
+    cblabel =    '1. ThermDyn High           2. ThermDyn Low           3. Warm High             '
+    cblabel = '%s 4. Cold Low                5. Warm Low               6. Cold High        ' %(cblabel)
     cb.set_label(label=cblabel, weight='bold')
 
     plt.ylim(0, ymax)
@@ -145,8 +145,8 @@ if __name__== '__main__':
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/'
   datafile = '%s/grad_cate_20220116_00.nc' %(datadir)
 
-  title = 'Zonal Averaged Annual Atmospheric Catalog'
-  imagename = 'zonal_averaged_annual.png'
+  title = 'Annual 2022'
+  imagename = 'annual_2022'
 
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile=',
                                                 'title=', 'imagename='])
@@ -186,28 +186,25 @@ if __name__== '__main__':
   for i in range(0, 720, 60):
     lon = int(i/2) - 180
     cscate = cate[:,:,i]
-   #title = 'gfs E180 Atmospheric Systems Catalog 20220116_00'
     if(lon < 0):
-      title = 'gfs Atmospheric Systems Catalog DEC 2021 at Lon %dW' %(-lon)
-      imagename = 'gfs_dec2021_at_lon_%dW.png' %(-lon)
+      tname = 'gfs Atmospheric Catalog %s at Lon %dW' %(title, -lon)
+      iname = 'gfs_%s_at_lon_%dW.png' %(imagename, -lon)
     else:
-      title = 'gfs Atmospheric Systems Catalog DEC 2021 at Lon %dE' %(lon)
-      imagename = 'gfs_dec2021_at_lon_%dE.png' %(lon)
-    print('title = ', title)
-    print('imagename = ', imagename)
-    csp.set_title(title)
-    csp.set_imagename(imagename)
+      tname = 'gfs Atmospheric Catalog %s at Lon %dW' %(title, lon)
+      iname = 'gfs_%s_at_lon_%dW.png' %(imagename, lon)
+    print('tname = ', tname)
+    print('iname = ', iname)
+    csp.set_title(tname)
+    csp.set_imagename(iname)
 
     csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
 
   cscate = np.average(cate, axis=2)
- #title = 'gfs Zonal Averaged Atmospheric Systems Catalog DEC 2021'
- #imagename = 'gfs_zonal_averaged_dec2021.png'
-  title = 'gfs Zonal Averaged Atmospheric Systems Catalog 20220116_00Z'
-  imagename = 'gfs_zonal_averaged_20220116_00Z.png'
-  print('title = ', title)
-  print('imagename = ', imagename)
-  csp.set_title(title)
-  csp.set_imagename(imagename)
+  tname = 'gfs Zonal Mean Atmospheric Catalog %s' %(title)
+  iname = 'gfs_zonal_mean_%s.png' %(imagename)
+  print('tname = ', tname)
+  print('iname = ', iname)
+  csp.set_title(tname)
+  csp.set_imagename(iname)
 
   csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)

@@ -9,8 +9,8 @@ begin
 ; to compute zonal (X) and meridional (Y) gradients.
 ;************************************************
 
-  T = smth9_Wrap(T, 0.50, 0.25, True)
-  T = smth9_Wrap(T, 0.50, 0.25, True)
+ ;T = smth9_Wrap(T, 0.50, 0.25, True)
+ ;T = smth9_Wrap(T, 0.50, 0.25, True)
 
  ;pre-allocate space for return gradients
   dimT = dimsizes(T)
@@ -54,24 +54,39 @@ begin
  delete(tlst)
 
 ;************************************************
+ rlst = get_gradient(Rho)
+ RX = rlst[0]
+ RY = rlst[1]
+ delete(rlst)
+
+;************************************************
  plst = get_gradient(P)
  PX = plst[0]
  PY = plst[1]
  delete(plst)
 
- PX = smth9_Wrap(PX, 0.50, 0.25, True)
- PY = smth9_Wrap(PY, 0.50, 0.25, True)
+;************************************************
+;PX = smth9_Wrap(PX, 0.50, 0.25, True)
+;PY = smth9_Wrap(PY, 0.50, 0.25, True)
 
- PX = smth9_Wrap(PX, 0.50, 0.25, True)
- PY = smth9_Wrap(PY, 0.50, 0.25, True)
+;PX = smth9_Wrap(PX, 0.50, 0.25, True)
+;PY = smth9_Wrap(PY, 0.50, 0.25, True)
 
  d2p = uv2dvF_Wrap(PX,PY)
 
 ;************************************************
- rlst = get_gradient(Rho)
- RX = rlst[0]
- RY = rlst[1]
- delete(rlst)
+;rlst = get_gradient(PX)
+;PXX = rlst[0]
+;PXY = rlst[1]
+;delete(rlst)
+
+;************************************************
+;rlst = get_gradient(PY)
+;PXY = rlst[0]
+;PYY = rlst[1]
+;delete(rlst)
+
+;d2p = PXX + PYY
 
 ;----------------------------------------------------------------------
  dtdr = TX*RX + TY*RY
@@ -143,23 +158,15 @@ end
 
 ;************************************************
 
-;if(.not. isdefined(diri)) then
-;  dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
-;else
-   dirname = diri
-;end if
+ dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
+ finame = "hl_annual_mean_gfs_4_2022.nc"
+ foname = "annual_grad_cate.nc"
 
-;if(.not. isdefined(fili)) then
-;  finame = "hl_annual_mean_gfs_4_2022.nc"
-;else
-   finame = fili
-;end if
+ info = readinfo("datainfo.txt")
 
-;if(.not. isdefined(filo)) then
-;  foname = "annual_grad_cate.nc"
-;else
-   foname = filo
-;end if
+ dirname = info(0)
+ finame = info(1)
+ foname = info(2)
 
  fi = dirname+finame
  fo = dirname+foname
