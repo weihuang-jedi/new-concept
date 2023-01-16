@@ -1,12 +1,11 @@
 load "categorical.ncl"
 
 ;----------------------------------------------------------------------
-undef("compute_state_catalog")
-procedure compute_state_catalog(fi:string, fo:string)
+undef("compute_daily_state_catalog")
+procedure compute_daily_state_catalog(f:file, nt:integer, fo:string)
 begin
-  f = addfile(fi,"r")
-  T = f->t(0, :, :, :)
-  P = f->p(0, :, :, :)
+  T = f->t(nt, :, :, :)
+  P = f->p(nt, :, :, :)
   Rho = P / (287.0*T)
 
   printVarSummary(T)
@@ -126,5 +125,12 @@ end
  print("fi = " + fi)
  print("fo = " + fo)
 
- compute_state_catalog(fi, fo)
+ f = addfile(fi,"r")
+ time = f->time
+ ndays = dimsizes(time)
+ do nt = 0, ndays - 1
+    fo := dirname + "state_cate_day_" + tostring(nt+1) + ".nc"
+    print("fo = " + fo)
+    compute_daily_state_catalog(f, nt, fo)
+ end do
 

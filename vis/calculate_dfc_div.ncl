@@ -29,17 +29,27 @@ end
  g = 9.80665          ; m/s2
  r = 287.0
 
- diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- flnm = "hl_monthly_mean_gfs_4_202201.nc"
+ diri = "/work2/noaa/gsienkf/weihuang/era5/data/"
+ flnm = "hl_monthly_mean_uvtp.nc"
 
  path = diri+flnm      
 
+ print("path: " + path)
+
  f = addfile(path, "r")
 
- u = f->U(:,:,:)  ; m/s, (level,lat,lon)
- v = f->V(:,:,:)
- t = f->T(:,:,:)
- p = f->P(:,:,:)
+ u = f->u(0,:,:,:)  ; m/s, (level,lat,lon)
+ v = f->v(0,:,:,:)
+ t = f->t(0,:,:,:)
+ p = f->p(0,:,:,:)
+ rho = p / (287.01*t)
+
+ printVarSummary(u)
+ printVarSummary(v)
+ printVarSummary(t)
+ printVarSummary(p)
+ printVarSummary(rho)
+ printMinMax(rho,0)
 
 ;Vertical levels
  h = t&alt
@@ -48,15 +58,11 @@ end
  ndh = toint(h(1) - h(0) + 0.5)
 
  dims = dimsizes(t)
- z = conform_dims(dims,h,0)
- rho = p / (287.01*t)
-
  nalt = dims(0)
+ z = conform_dims(dims,h,0)
 
-;printVarSummary(z)
-;printMinMax(z,0)
-;printVarSummary(rho)
-;printMinMax(rho,0)
+ printVarSummary(z)
+ printMinMax(z,0)
 
  rho@units = "kg/kg"
 
@@ -73,7 +79,10 @@ end
 
  malt = dims(0)
 
+ print("malt = " + tostring(malt))
+
  ua(0:malt-1,:,:) = 0.5*(u(0:malt-1,:,:) + u(1:malt,:,:))
+ printVarSummary(ua)
  va(0:malt-1,:,:) = 0.5*(v(0:malt-1,:,:) + v(1:malt,:,:))
  ta(0:malt-1,:,:) = 0.5*(t(0:malt-1,:,:) + t(1:malt,:,:))
  ra(0:malt-1,:,:) = 0.5*(rho(0:malt-1,:,:) + rho(1:malt,:,:))
@@ -92,11 +101,11 @@ end
  ra = smth9_Wrap(ra, 0.50, 0.25, True)
  ra = smth9_Wrap(ra, 0.50, 0.25, True)
 
-;printVarSummary(ua)
-;printVarSummary(va)
-;printVarSummary(ta)
-;printVarSummary(ra)
-;printVarSummary(dz)
+ printVarSummary(ua)
+ printVarSummary(va)
+ printVarSummary(ta)
+ printVarSummary(ra)
+ printVarSummary(dz)
 
  print("Density flux components at each height level")
 ;Density flux components at each height level
@@ -139,10 +148,10 @@ end
  copy_VarCoords(u(0,:,:), iduvr)      ; (lat,lon)
  delete(duvr_dz)
 
- VIMFC =  iduvr           ; keep meta data                         
- VIMFC = -VIMFC           ; Note the preceding -1 [negative precedes integration] 
- VIMFC@long_name = "VIMFC"
+ VIDDF =  iduvr           ; keep meta data                         
+ VIDDF = -VIDDF           ; Note the preceding -1 [negative precedes integration] 
+ VIDDF@long_name = "VIDDF"
 
  path = diri+"monthly_mean_divergence_of_density_flux_202201.nc"
- write2file(duvr, VIMFC, path)
+ write2file(duvr, VIDDF, path)
 

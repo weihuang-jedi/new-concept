@@ -1,7 +1,7 @@
 load "categorical.ncl"
 ;----------------------------------------------------------------------
 undef ("get_gradient")
-function get_gradient(T:float)
+function get_gradient(T:double)
 begin
 ;************************************************
 ; SPHERICAL HARMONICS:
@@ -32,18 +32,28 @@ undef("compute_grad_catalog")
 procedure compute_grad_catalog(fi:string, fo:string)
 begin
   f = addfile(fi,"r")
-  T = f->T(:, :, :)
-  P = f->P(:, :, :)
+  alt = f->alt(:)
+  lat = f->lat(:)
+  lon = f->lon(:)
+  T = f->t(0, :, :, :)
+  P = f->p(0, :, :, :)
   Rho = P / (287.0*T)
 
-  T@long_name = "T"                     ; short name for plot labeling clarity
+  T@long_name = "T"
+  T!0 = "alt"
+  T!1 = "lat"
+  T!2 = "lon"
+  T&alt = alt
+  T&lat = lat
+  T&lon = lon
+  copy_VarCoords(T, P)
   copy_VarCoords(T, Rho)
 
- ;printVarSummary(T)                    ; (94,192) gaussian [S->N]
- ;printMinMax(T,True)
- ;print("")
-
-  alt = f->alt
+  printVarSummary(T)
+  printMinMax(T,True)
+  printVarSummary(P)
+  printMinMax(P,True)
+  print("")
 
   imgname = "catelog_section"
   
@@ -54,18 +64,11 @@ begin
  delete(tlst)
 
 ;************************************************
- rlst = get_gradient(Rho)
- RX = rlst[0]
- RY = rlst[1]
- delete(rlst)
-
-;************************************************
  plst = get_gradient(P)
  PX = plst[0]
  PY = plst[1]
  delete(plst)
 
-;************************************************
 ;PX = smth9_Wrap(PX, 0.50, 0.25, True)
 ;PY = smth9_Wrap(PY, 0.50, 0.25, True)
 
@@ -75,18 +78,10 @@ begin
  d2p = uv2dvF_Wrap(PX,PY)
 
 ;************************************************
-;rlst = get_gradient(PX)
-;PXX = rlst[0]
-;PXY = rlst[1]
-;delete(rlst)
-
-;************************************************
-;rlst = get_gradient(PY)
-;PXY = rlst[0]
-;PYY = rlst[1]
-;delete(rlst)
-
-;d2p = PXX + PYY
+ rlst = get_gradient(Rho)
+ RX = rlst[0]
+ RY = rlst[1]
+ delete(rlst)
 
 ;----------------------------------------------------------------------
  dtdr = TX*RX + TY*RY
@@ -119,7 +114,7 @@ begin
  cate = where(opt .gt. 0, 2, cate)
 
 ;----------------------------------------------------------------------
-;Cate 3:  dtdr < 0, dtdp >= 0, d2p <= 0
+;Cate 3:  dtdr >= 0, dtdp >= 0, d2p <= 0
  opt1 = where(dtdr .lt. 0.0, 1, 0)
  opt2 = where(dtdp .ge. 0.0, 1, 0)
  opt3 = where(d2p .le. 0.0, 1, 0)
@@ -127,46 +122,50 @@ begin
  cate = where(opt .gt. 0, 3, cate)
 
 ;----------------------------------------------------------------------
-;Cate 4:  dtdr < 0, dtdp >= 0, d2p > 0
+;Cate 4:  dtdr >= 0, dtdp >= 0, d2p > 0
  opt3 = where(d2p .gt. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 4, cate)
 
 ;----------------------------------------------------------------------
-;Cate 5:  dtdr < 0, dtdp < 0, d2p <= 0
+;Cate 5:  dtdr >= 0, dtdp < 0, d2p <= 0
  opt2 = where(dtdp .lt. 0.0, 1, 0)
  opt3 = where(d2p .le. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 5, cate)
 
 ;----------------------------------------------------------------------
-;Cate 6:  dtdr < 0, dtdp < 0, d2p > 0
+;Cate 6:  dtdr >= 0, dtdp < 0, d2p > 0
  opt3 = where(d2p .gt. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 6, cate)
+
 ;----------------------------------------------------------------------
- pvar = tofloat(cate)
-;pvar = smth9_Wrap(pvar, 0.50, -0.25, True)
-;pvar = smth9_Wrap(pvar, 0.50, 0.25, True)
-;cate = toint(pvar + 0.5)
-;pvar = tofloat(cate)
+ copy_VarCoords(T, cate)
+ cate@long_name = "Catelog"
 
- pvar@long_name = "Catelog"
-
- write2file(T, P, pvar, fo)
+ write2file(alt, lat, lon, T, P, cate, fo)
 end
 
 ;************************************************
 
- dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
- finame = "hl_annual_mean_gfs_4_2022.nc"
- foname = "annual_grad_cate.nc"
+;if(.not. isdefined(diri)) then
+;  dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
+;else
+   dirname = diri
+;end if
 
- info = readinfo("datainfo.txt")
+;if(.not. isdefined(fili)) then
+;  finame = "hl_annual_mean_gfs_4_2022.nc"
+;else
+   finame = fili
+;end if
 
- dirname = info(0)
- finame = info(1)
- foname = info(2)
+;if(.not. isdefined(filo)) then
+;  foname = "annual_grad_cate.nc"
+;else
+   foname = filo
+;end if
 
  fi = dirname+finame
  fo = dirname+foname

@@ -55,16 +55,10 @@ class PlotVariable():
       print('file: %s does not exist. Stop' %(flnm))
       sys.exit(-1)
 
-    lat = ncf.variables['lat_0'][:]
-    lon = ncf.variables['lon_0'][:]
-   #pw  = ncf.variables['PWAT_P0_L200_GLL0'][:,:]
-   #title = 'Precipitable Water Dec 2021'
-   #prate = 1000.0*ncf.variables['PRATE_P0_L1_GLL0'][:,:]
-   #title = 'Precipitable Rate Dec 2021, units: g m-2s-1'
-   #rain = ncf.variables['RWMR_P0_L105_GLL0'][:,:]
-   #title = 'Rain mixing ratio Dec 2021, units: g kg-1'
-    pmsl = 0.01*ncf.variables['PRMSL_P0_L101_GLL0'][:,:]
-    title = 'Pressure reduced to MSL Dec 2021, units: hPa'
+    lat = ncf.variables['latitude'][:]
+    lon = ncf.variables['longitude'][:]
+    pmsl = 0.01*ncf.variables['msl'][0,:,:]
+    title = 'Mean sea level pressure Dec 2021, units: hPa'
     plotit(lon, lat, pmsl, title)
 
     ncf.close()
@@ -73,8 +67,8 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
-  infile = 'monthly_mean_gfs_4_202112.nc'
+  datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
+  infile = 'monthly_mean_dec2021_surfvar.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])

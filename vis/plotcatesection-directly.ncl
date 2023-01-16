@@ -7,8 +7,8 @@ begin
   cate = f->cate(:, :, :)
   P = f->P(:, :, :)
 
-  imgname = "gfs Zonal Averaged Atmospheric Catalog"
-  title = "gfs_Zonal_Averaged_Atmospheric_Catalog"
+  imgname = "era5 Zonal Averaged Atmospheric Catalog"
+  title = "era5_Zonal_Averaged_Atmospheric_Catalog"
   
 ;----------------------------------------------------------------------
  dimP = dimsizes(P)
@@ -16,8 +16,6 @@ begin
  nlat = dimP(1)
  nlon = dimP(2)
  lev = new((/nalt/), float, -1.0e32)
-
- print(dimP)
 
  do n=0, nalt-1
     pm = avg(P(n,:,:))
@@ -37,22 +35,14 @@ begin
  cate&lon = P&lon
  cate@long_name = "Atmospheric Catalog"
 
- printVarSummary(cate)
-
- plot_avg_cate_section(cate, plottype, imgname, title)
-
-;do i = 0, 350, 60
-;  lon = i/2
-;  imgname = "gfs Zonal Averaged Atmospheric Catalog at Lon " + tostring(lon)
-;  title = "gfs_Zonal_Averaged_Atmospheric_Catalog_at_Lon_" + tostring(lon)
-;  plot_cate_section(cate, plottype, lon, imgname, title)
-;end do
+ plot_cate_section(cate, plottype, imgname, title)
+end
 
 ;************************************************
 ;plottype = "png"
  plottype = "x11"
 
- diri = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2021/"
+ diri = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2021"
  fili = "grad_cate_202112.nc"
  f = addfile(diri+fili, "r")
 

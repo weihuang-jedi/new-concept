@@ -74,7 +74,7 @@ class CrossSectionPlot():
    #ax.xaxis.set_major_locator(ticker.FixedLocator(lats[::60]))
    #ax.xaxis.set_minor_locator(ticker.FixedLocator(np.linspace(0.2, 0.8, 4)))
     ax.set_xticklabels(xticklabels)
-    plt.xticks(lats[::60], xticklabels)
+    plt.xticks(lats[::30], xticklabels)
 
     ytickpos = np.arange(0, ymax+1000, 1000)
     yticklabels = []
@@ -140,8 +140,12 @@ if __name__== '__main__':
  #datafile = '%s/grad_cate_202112.nc' %(datadir)
  #datafile = '%s/state_cate_202112.nc' %(datadir)
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/daily-data/'
-  datafile = '%s/grad_cate_2022121500.nc' %(datadir)
+ #datadir = '/work2/noaa/gsienkf/weihuang/era5/daily-data/'
+ #datafile = '%s/grad_cate_2022121500.nc' %(datadir)
+
+  datadir = '/work2/noaa/gsienkf/weihuang/era5/data/'
+  datafile = '%s/state_cate_2021121600.nc' %(datadir)
+
 
  #title = 'Zonal Averaged Annual Atmospheric Catalog'
  #imagename = 'zonal_averaged_annual.png'
@@ -185,9 +189,9 @@ if __name__== '__main__':
   csp.set_cblevs(cblevs=cblevs)
 
  #for i in range(0, 720, 60):
-  for i in range(0, 720, 240):
+  for i in range(0, 360, 120):
     lon = int(i/2) - 180
-    cscate = cate[:,:,i]
+    cscate = cate[:,:,i] + 0.5
     if(lon < 0):
      #title = 'era5 Atmospheric Systems Catalog DEC 2021 at Lon %dW' %(-lon)
      #imagename = 'era5_dec2021_at_lon_%dW.png' %(-lon)
@@ -206,7 +210,7 @@ if __name__== '__main__':
 
     csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
 
-  cscate = np.average(cate, axis=2)
+  cscate = np.average(cate, axis=2) + 0.5
   title = 'era5 Zonal Averaged Atmospheric Systems Catalog DEC 2021'
   imagename = 'era5_zonal_averaged_dec2021.png'
   print('title = ', title)

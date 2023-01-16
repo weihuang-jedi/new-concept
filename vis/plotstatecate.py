@@ -103,7 +103,7 @@ class PlotVariable():
         print(f"{x} has occurred {op.countOf(z1d, x)} times")
 
      #title = '%s at hight level: %f' %(varname, self.alt[k])
-      title = 'gfs Atmospheric System Catalog at: %d meter' %(int(self.alt[k]+0.5))
+      title = 'era5 Atmospheric System Catalog at: %d meter' %(int(self.alt[k]+0.5))
       plotit(self.lon, self.lat, var, title)
 
     ncf.close()
@@ -112,12 +112,8 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
- #infile = 'state_cate_202112.nc'
-  infile = 'my_state_cate_202112.nc'
-
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
-  infile = 'my_state_cate_20220116_00.nc'
+  datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
+  infile = 'state_cate_202112.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])
