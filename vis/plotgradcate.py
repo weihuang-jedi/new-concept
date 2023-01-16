@@ -19,7 +19,7 @@ def plotit(x, y, z, title):
   colors = ('magenta', 'navy', 'orange', 'cyan', 'red', 'blue', 'brown')
 
   X, Y = np.meshgrid(x, y)
-  Z = z + 0.5
+  Z = z + 0.75
 
   print('Plotting ', title)
    
@@ -47,7 +47,7 @@ def plotit(x, y, z, title):
   plt.title(title)
   imagename = '%s.png' %(title.replace(' ', '_'))
   plt.savefig(imagename)
-  plt.show()
+ #plt.show()
 
 #=========================================================================
 class PlotVariable():
@@ -92,15 +92,14 @@ class PlotVariable():
 
     for k in range(0, self.nalt, 40):
       var = zv[k,:,:]
- 
      #--------------------------------------------------------------------------------
       z1d = var.flatten()
       for x in [0, 1, 2, 3, 4, 5, 6]:
         print(f"{x} has occurred {op.countOf(z1d, x)} times")
 
      #title = '%s at hight level: %f' %(varname, self.alt[k])
-     #title = 'gfs Atmospheric System Catalog at 20220116_00Z %d meter' %(int(self.alt[k]+0.5))
-      title = 'gfs Atmospheric System Catalog of DEC 2021 %d meter' %(int(self.alt[k]+0.5))
+      title = 'era5 Atmospheric System Catalog at: %d meter' %(int(self.alt[k]+0.5))
+
       plotit(self.lon, self.lat, var, title)
 
     ncf.close()
@@ -109,10 +108,8 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
+  datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
   infile = 'grad_cate_202112.nc'
- #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
- #infile = 'grad_cate_20220116_00.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])
