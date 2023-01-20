@@ -237,7 +237,7 @@ end
 
 ;----------------------------------------------------------------------
 undef("write2file")
-procedure write2file(T:float, P:float, cate:float, flnm:string)
+procedure write2file(alt:float, lat:float, lon:float, cate:float, flnm:string)
 begin
   system("/bin/rm -f " + flnm)   ; remove any pre-existing file
   ncdf = addfile(flnm, "c")  ; open output netCDF file
@@ -256,23 +256,61 @@ begin
  ; output variables directly; NCL will call appropriate functions
  ; to write the meta data associated with each variable
  ;===================================================================
-  ncdf->T = T
-  ncdf->P = P
-
- ;alt!0 = "alt"
- ;alt&alt = alt
- ;alt@units = "meter"
-
   cate!0 = "alt"
   cate!1 = "lat"
   cate!2 = "lon"
-  cate&alt = T&alt
-  cate&lat = T&lat
-  cate&lon = T&lon
+  cate&alt = alt
+  cate&lat = lat
+  cate&lon = lon
 
   ncdf->cate = cate
 
- ;delete(ncdf)
+  delete(ncdf)
+end
+
+;----------------------------------------------------------------------
+undef("write_dfc_div")
+procedure write_dfc_div(alt:integer, lat:float, lon:float, idfc:double, dfc:double, flnm:string)
+begin
+  system("/bin/rm -f " + flnm)   ; remove any pre-existing file
+  ncdf = addfile(flnm, "c")  ; open output netCDF file
+
+ ;===================================================================
+ ; create global attributes of the file (optional)
+ ;===================================================================
+  fAtt               = True            ; assign file attributes
+  fAtt@title         = "NCL Write Divergence of density flux"
+  fAtt@source_file   = "Calculated from NCL script"
+  fAtt@Conventions   = "None"
+  fAtt@creation_date = systemfunc ("date")
+  fileattdef( ncdf, fAtt )            ; copy file attributes
+
+ ;===================================================================
+ ; output variables directly; NCL will call appropriate functions
+ ; to write the meta data associated with each variable
+ ;===================================================================
+
+  idfc!0 = "lat"
+  idfc!1 = "lon"
+  idfc&lat = lat
+  idfc&lon = lon
+
+  printVarSummary(idfc)
+
+  ncdf->idfc = idfc
+
+  dfc!0 = "alt"
+  dfc!1 = "lat"
+  dfc!2 = "lon"
+  dfc&alt = alt
+  dfc&lat = lat
+  dfc&lon = lon
+
+  printVarSummary(dfc)
+
+  ncdf->dfc = dfc
+
+  delete(ncdf)
 end
 
 ;----------------------------------------------------------------------

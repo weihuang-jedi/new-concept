@@ -27,8 +27,8 @@ end
  plottype = "png"
 ;plottype = "x11"
 
- diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- fon = diri + "state_cate_20220116_0000.nc"
+ diri = "/work2/noaa/gsienkf/weihuang/era5/data/"
+ fon = diri + "state_cate_2021121600.nc"
 
  gen_plot(plottype, fon)
 

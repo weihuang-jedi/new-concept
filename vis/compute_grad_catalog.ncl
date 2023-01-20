@@ -8,10 +8,6 @@ begin
 ; Use "highly accurate" spherical harmonics procedure (gradsg)
 ; to compute zonal (X) and meridional (Y) gradients.
 ;************************************************
-
- ;T = smth9_Wrap(T, 0.50, 0.25, True)
- ;T = smth9_Wrap(T, 0.50, 0.25, True)
-
  ;pre-allocate space for return gradients
   dimT = dimsizes(T)
   TX = new( dimT, typeof(T), getFillValue(T) )  ; lon=>X
@@ -68,12 +64,6 @@ begin
  PX = plst[0]
  PY = plst[1]
  delete(plst)
-
-;PX = smth9_Wrap(PX, 0.50, 0.25, True)
-;PY = smth9_Wrap(PY, 0.50, 0.25, True)
-
-;PX = smth9_Wrap(PX, 0.50, 0.25, True)
-;PY = smth9_Wrap(PY, 0.50, 0.25, True)
 
  d2p = uv2dvF_Wrap(PX,PY)
 
@@ -144,7 +134,7 @@ begin
  copy_VarCoords(T, cate)
  cate@long_name = "Catelog"
 
- write2file(alt, lat, lon, T, P, cate, fo)
+ write2file(alt, lat, lon, cate, fo)
 end
 
 ;************************************************

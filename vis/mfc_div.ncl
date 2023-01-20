@@ -4,16 +4,16 @@
  ptop@units = "hPa"
  g    = 9.80665          ; m/s2
 
- diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- flnm = "monthly_mean_gfs_4_202201_000.nc"
+ diri = "/work2/noaa/gsienkf/weihuang/era5/data/"
+ flnm = "hl_monthly_mean_uvtp.nc"
 
  path = diri+flnm      
 
  f = addfile(path, "r")
 
- u = f->UGRD_P0_L100_GLL0(:,:,:)  ; m/s, (level,lat,lon)
- v = f->VGRD_P0_L100_GLL0(:,:,:)
- q = f->SPFH_P0_L100_GLL0(:,:,:)
+ u = f->u(:,:,:)  ; m/s, (level,lat,lon)
+ v = f->v(:,:,:)
+ q = f->q(:,:,:)
  ps = f->PRMSL_P0_L101_GLL0(:,:)
 
 ;Vertical levels
