@@ -47,24 +47,27 @@ begin
 end
 
 ;---------------------------------------------------------------------
- plottype = "png"
-;plottype = "x11"
+;plottype = "png"
+ plottype = "x11"
 
 ;diri = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2021/"
 ;fili = "grad_cate_202112.nc"
  diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- fili = "grad_cate_20220116_00.nc"
+;fili = "grad_cate_20220116_00.nc"
+ fili = "p_grad_div_jan_grad_cate_202201.nc"
+ imgstr = "jan_2022_grad_cate"
+ titlestr = "Jan 2022"
 
- info = readinfo("datainfo.txt")
+;info = readinfo("datainfo.txt")
 
- plottype = info(0)
- diri = info(1)
- fili = info(2)
- imgstr = info(3)
- titlestr = info(4)
+;plottype = info(0)
+;diri = info(1)
+;fili = info(2)
+;imgstr = info(3)
+;titlestr = info(4)
 
  f = addfile(diri+fili,"r")
 
- gen_plot(f, plottype, imgstr, titlestr, "NH")
  gen_plot(f, plottype, imgstr, titlestr, "SH")
+ gen_plot(f, plottype, imgstr, titlestr, "NH")
 

@@ -351,3 +351,57 @@ begin
   frame(wks)
 end
 
+;----------------------------------------------------------------------
+undef("write_mfc")
+procedure write_mfc(duvq:float, iduvq:float, flnm:string)
+begin
+  system("/bin/rm -f " + flnm)   ; remove any pre-existing file
+  ncdf = addfile(flnm, "c")  ; open output netCDF file
+
+ ;===================================================================
+ ; create global attributes of the file (optional)
+ ;===================================================================
+  fAtt               = True            ; assign file attributes
+  fAtt@title         = "NCL calculated Moisture Flux Divergence"
+  fAtt@source_file   = "Calculated from NCL script: cal-mfc-div"
+  fAtt@Conventions   = "None"
+  fAtt@creation_date = systemfunc ("date")
+  fileattdef( ncdf, fAtt )            ; copy file attributes
+
+ ;===================================================================
+ ; output variables directly; NCL will call appropriate functions
+ ; to write the meta data associated with each variable
+ ;===================================================================
+  ncdf->duvq = duvq
+  ncdf->iduvq = iduvq
+
+  delete(ncdf)
+end
+
+;----------------------------------------------------------------------
+undef("write_dfc")
+procedure write_dfc(duvr:float, iduvr:float, flnm:string)
+begin
+  system("/bin/rm -f " + flnm)   ; remove any pre-existing file
+  ncdf = addfile(flnm, "c")  ; open output netCDF file
+
+ ;===================================================================
+ ; create global attributes of the file (optional)
+ ;===================================================================
+  fAtt               = True            ; assign file attributes
+  fAtt@title         = "NCL calculated Density Flux Divergence"
+  fAtt@source_file   = "Calculated from NCL script: cal-dfc-div"
+  fAtt@Conventions   = "None"
+  fAtt@creation_date = systemfunc ("date")
+  fileattdef( ncdf, fAtt )            ; copy file attributes
+
+ ;===================================================================
+ ; output variables directly; NCL will call appropriate functions
+ ; to write the meta data associated with each variable
+ ;===================================================================
+  ncdf->duvr = duvr
+  ncdf->iduvr = iduvr
+
+  delete(ncdf)
+end
+

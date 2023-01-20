@@ -1,11 +1,29 @@
-;===================================================================
+load "categorical.ncl"
+
+;----------------------------------------------------------------------
+ diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
+ flnm = "monthly_mean_gfs_4_202201.nc"
+
+ dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
+ finame = "monthly_mean_gfs_4_202201.nc"
+ foname = "monthly_mean_mfc_202201.nc"
+
+ info = readinfo("datainfo.txt")
+
+ plottype = info(0)
+ dirname = info(1)
+ finame = info(2)
+ foname = info(3)
+
+ fi = dirname+finame
+ fo = dirname+foname
+
+ print("fi = " + fi)
+ print("fo = " + fo)
 
  ptop = 1
  ptop@units = "hPa"
  g    = 9.80665          ; m/s2
-
- diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- flnm = "monthly_mean_gfs_4_202201_000.nc"
 
  path = diri+flnm      
 
@@ -59,32 +77,6 @@
  vq@long_name = "Meridional Moisture Flux [vq]"
  vq@units = "["+v@units+"]["+q@units+"]" 
  copy_VarCoords(v,vq)                        ; (level,lat,lon)
-
-;printVarSummary(q)                          ; (level,lat,lon); g/kg
-;printMinMax(q,0)
-;print("-----")
-;printVarSummary(u)                          ; (level,lat,lon); m/s
-;printMinMax(u,0)
-;print("-----")
-;printVarSummary(v)
-;printMinMax(v,0)
-;print("-----")
-;printVarSummary(ps)                         ; (lat,lon); Pa => kg/(m-s2) 
-;printMinMax(ps,0)
-;print("-----")
-;printVarSummary(uq)                         ; (level,lat,lon); (m/s)(g/kg)
-;printMinMax(uq,0)
-;print("-----")
-;printVarSummary(vq)
-;printMinMax(vq,0)
-;print("-----")
-;printVarSummary(dp)                         ; (level,lat,lon); Pa => kg/(m-s2)
-;printMinMax(dp,0)
-;print("-----")
-                            ; examine layer thickness at selected locations
-;print(dp(:,{40},{180}))    ; mid-Pacific
-;print(dp(:,{40},{255}))    ; Boulder, CO 
-;print("-----")
 
 ;Integrated mass weighted moisture flux components
 

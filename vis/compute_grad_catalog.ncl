@@ -9,9 +9,6 @@ begin
 ; to compute zonal (X) and meridional (Y) gradients.
 ;************************************************
 
- ;T = smth9_Wrap(T, 0.50, 0.25, True)
- ;T = smth9_Wrap(T, 0.50, 0.25, True)
-
  ;pre-allocate space for return gradients
   dimT = dimsizes(T)
   TX = new( dimT, typeof(T), getFillValue(T) )  ; lon=>X
@@ -53,11 +50,23 @@ begin
  TY = tlst[1]
  delete(tlst)
 
+ TX = smth9_Wrap(TX, 0.50, 0.25, True)
+ TY = smth9_Wrap(TY, 0.50, 0.25, True)
+
+ TX = smth9_Wrap(TX, 0.50, 0.25, True)
+ TY = smth9_Wrap(TY, 0.50, 0.25, True)
+
 ;************************************************
  rlst = get_gradient(Rho)
  RX = rlst[0]
  RY = rlst[1]
  delete(rlst)
+
+ RX = smth9_Wrap(RX, 0.50, 0.25, True)
+ RY = smth9_Wrap(RY, 0.50, 0.25, True)
+
+ RX = smth9_Wrap(RX, 0.50, 0.25, True)
+ RY = smth9_Wrap(RY, 0.50, 0.25, True)
 
 ;************************************************
  plst = get_gradient(P)
@@ -65,14 +74,16 @@ begin
  PY = plst[1]
  delete(plst)
 
-;************************************************
-;PX = smth9_Wrap(PX, 0.50, 0.25, True)
-;PY = smth9_Wrap(PY, 0.50, 0.25, True)
+ PX = smth9_Wrap(PX, 0.50, 0.25, True)
+ PY = smth9_Wrap(PY, 0.50, 0.25, True)
 
-;PX = smth9_Wrap(PX, 0.50, 0.25, True)
-;PY = smth9_Wrap(PY, 0.50, 0.25, True)
+ PX = smth9_Wrap(PX, 0.50, 0.25, True)
+ PY = smth9_Wrap(PY, 0.50, 0.25, True)
 
  d2p = uv2dvF_Wrap(PX,PY)
+
+ d2p = smth9_Wrap(d2p, 0.50, 0.25, True)
+ d2p = smth9_Wrap(d2p, 0.50, 0.25, True)
 
 ;************************************************
 ;rlst = get_gradient(PX)
