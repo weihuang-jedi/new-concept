@@ -3,7 +3,7 @@
  r = 287.0
 
  diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- flnm = "hl_monthly_mean_gfs_4_202201.nc"
+ flnm = "hl_gfs_4_20220116_0000_000.nc"
 
  path = diri+flnm      
 

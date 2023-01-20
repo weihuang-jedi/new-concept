@@ -1,94 +1,106 @@
 load "categorical.ncl"
 
 ;----------------------------------------------------------------------
- dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
- finame = "monthly_mean_gfs_4_202201.nc"
- foname = "monthly_mean_mfc_202201.nc"
+ g = 9.80665          ; m/s2
+ r = 287.0
 
- info = readinfo("datainfo.txt")
+ diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
+ finame = "hl_gfs_4_20220116_0000_000.nc"
+ foname = "dfc_20220116_00.nc"
 
- dirname = info(0)
- finame = info(1)
- foname = info(2)
-
- fi = dirname+finame
- fo = dirname+foname
-
- print("fi = " + fi)
- print("fo = " + fo)
-
-;Vertical levels
- ptop = 1
- ptop@units = "Pa"
- g    = 9.80665          ; m/s2
+ fi = diri+finame
+ fo = diri+foname
 
  f = addfile(fi, "r")
 
- t = f->TMP_P0_L100_GLL0(:,:,:)
+ u = f->U(:,:,:)  ; m/s, (level,lat,lon)
+ v = f->V(:,:,:)
+ t = f->T(:,:,:)
+ p = f->P(:,:,:)
 
- plev = t&lv_ISBL0                   ; [100000,...,30000] Pa [kg/(m-s2)]
- plev@units = "Pa"
+;Vertical levels
+ h = t&alt
+ h@units = "M"
 
- p3d = conform_dims(dimsizes(t),plev,0)
+ ndh = toint(h(1) - h(0) + 0.5)
 
-;printVarSummary(t)
-;printVarSummary(p3d)
-;print(p3d(:,181,360))
+ dims = dimsizes(t)
+ z = conform_dims(dims,h,0)
+ rho = p / (287.01*t)
 
- u = f->UGRD_P0_L100_GLL0(:,:,:)  ; m/s, (level,lat,lon)
- v = f->VGRD_P0_L100_GLL0(:,:,:)
- ps = f->PRMSL_P0_L101_GLL0(:,:)
+;printVarSummary(z)
+;printMinMax(z,0)
+;printVarSummary(rho)
+;printMinMax(rho,0)
 
-;Divergence function [used later] requires S->N grid order
+ dims(0) = dims(0) - 1
+ ua = new(dims, typeof(u))
+ va = new(dims, typeof(v))
+ ra = new(dims, typeof(rho))
+ dz = new(dims, typeof(h))
 
- u  = u(:,::-1,:)  
- v  = v(:,::-1,:)
- t  = t(:,::-1,:)     
- ps =ps(  ::-1,:)       
+ ra@units = "kg/kg"
 
- r = p3d/(287.0*t)
+ delete(t)
+ delete(p)
 
-;Layer thickness: ; Pa=>[kg/(m-s2)], (level,lat,lon) 
-;Mass weighting: (dp/g) => [Pa/(m/s2)] => (Pa-s2)/m => [kg/(m-s2)][s2/m] =>  (kg/m2)
-;Reference: http://www.cgd.ucar.edu/cas/catalog/newbudgets/
+ malt = dims(0)
 
- dp = dpres_plevel_Wrap(plev, ps, ptop, 0) ; Pa; layar thickness 
+ alta = 0.5*(h(0:malt-1) + h(1:malt))
+ lat = u&lat
+ lon = u&lat
 
- dimdp = dimsizes(dp)
+ ua(0:malt-1,:,:) = 0.5*(u(0:malt-1,:,:) + u(1:malt,:,:))
+ va(0:malt-1,:,:) = 0.5*(v(0:malt-1,:,:) + v(1:malt,:,:))
+ ra(0:malt-1,:,:) = 0.5*(rho(0:malt-1,:,:) + rho(1:malt,:,:))
+ dz(0:malt-1,:,:) = z(1:malt,:,:) - z(0:malt-1,:,:)
 
-;print(dimdp)
+;do n = 1, 1
+;ua = smth9_Wrap(ua, 0.50, 0.25, True)
+;va = smth9_Wrap(va, 0.50, 0.25, True)
+;ta = smth9_Wrap(ta, 0.50, 0.25, True)
+;ra = smth9_Wrap(ra, 0.50, 0.25, True)
+;end do
 
- dpg  = dp/g    
- dpg@long_name = "Layer Mass Weighting"
- dpg@units     = "kg/m2"                     ; dp/g, Pa/(m s-2), reduce to kg m-2
+ print("Density flux components at each height level")
+;Density flux components at each height level
+ ur = ua*ra
+ vr = va*ra
 
-;Density flux components at each pressure level
- ur = u*r
- vr = v*r
-
-;Integrated mass weighted moisture flux components
-;Divergence of moisture flux: uv2dvF => global 'fixed' rectilinear grid
+ print("Divergence of density flux: uv2dvF => global 'fixed' rectilinear grid")
+;Divergence of density flux: uv2dvF => global 'fixed' rectilinear grid
 
  duvr  = uv2dvF_Wrap(ur, vr)    ; (level,lat,lon)
  duvr@long_name = "Divergence of Density Flux"
- duvr@units     = "g/(kg-s)"    ; (1/m)*[(m/s)(g/kg)] => [g/(kg-s)]
- copy_VarCoords(u, duvr)        ; (lat,lon)
+ duvr@units     = "kg/(m2-s)"    ; (1/m)*[(m/s)(kg/m2)] => [kg/(m2-s)]
+ duvr = 1.0e6*duvr
+ copy_VarCoords(u(0:malt,:,:),duvr)                        ; (level,lat,lon)
+ delete(ur)
+ delete(vr)
 
-;Mass weighted integration [sum] of the divergence of moisture flux
+ print("Mass weighted integration [sum] of the divergence of density flux")
+;Mass weighted integration [sum] of the divergence of density flux
 
- duvr_dpg = duvr*dpg            ;  [g/(kg-s)][kg/m2] => [g/(m2-s)]
- iduvr    = dim_sum_n(duvr_dpg, 0)
+ duvr_dz = duvr*dz            ;  [kg/(m2-s)][m] => [kg/(m-s)]
+ iduvr    = dim_sum_n(duvr_dz, 0)
  iduvr@long_name = "Integrated DFC" 
  iduvr@LONG_NAME = "Integrated Density Flux Convergence" 
- iduvr@units     = "kg/(m2-s)"
- copy_VarCoords(u(0,:,:), iduvr)      ; (lat,lon)
- delete(duvr_dpg)
+ iduvr@units     = "kg/(m-s)"
+ delete(duvr_dz)
 
- VIDFC =  iduvr           ; keep meta data                         
+ VIDFC =  1.0e6*iduvr           ; keep meta data                         
  VIDFC = -VIDFC           ; Note the preceding -1 [negative precedes integration] 
  VIDFC@long_name = "VIDFC"
+ copy_VarCoords(u(0,:,:), VIDFC)      ; (lat,lon)
 
 ;-----------------------------------------------------------------------------------------
+ duvr!0 = "alt"
+ duvr!1 = "lat"
+ duvr!2 = "lon"
+ duvr&alt = alta
+ duvr&lat = lat
+ duvr&lon = lon
+
  printVarSummary(duvr)
  printVarSummary(VIDFC)
  write_dfc(duvr, VIDFC, fo)

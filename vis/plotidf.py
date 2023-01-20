@@ -22,13 +22,15 @@ def plotit(x, y, z, title):
   ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
   proj = ccrs.PlateCarree()
 
+ #levels = np.linspace(-1.0e11, 1.0e11, 101)
  #levels = np.linspace(-1.0, 1.0, 21)
-  levels = np.linspace(-0.1, 0.1, 21)
+ #levels = np.linspace(-0.1, 0.1, 21)
  #cmap='nipy_spectral'
  #cmap='jet'
  #cmap='bwr'
   cmap='seismic'
-  cs = ax.contourf(X, Y, z, levels, transform=proj, cmap=cmap)
+ #cs = ax.contourf(X, Y, z, levels, transform=proj, cmap=cmap)
+  cs = ax.contourf(X, Y, z, transform=proj, cmap=cmap)
  #cbar = plt.colorbar(cs, orientation='horizontal', shrink=0.85)
   cbar = plt.colorbar(cs, ax=ax, orientation='horizontal', pad=.1, fraction=0.06,)
   ax.set_extent([-180, 180, -90, 90], crs=proj)
@@ -47,8 +49,6 @@ class PlotVariable():
 
     print('debug: ', debug)
 
-    self.dimlist = ('alt', 'lat', 'lon')
-
  #-----------------------------------------------------------------------------------------
   def process(self, flnm=None):
     if(os.path.exists(flnm)):
@@ -65,17 +65,14 @@ class PlotVariable():
    #title = 'Intergrated Density Flux Jan 2022'
    #plotit(lon, lat, idf, title)
 
-   #print('alt=', alt)
-
-    dz = alt[1] - alt[0]
     df = ncf.variables['duvr'][:,:,:]
-    n = 30
+    n = 1
     while(n < len(alt)):
-      var = 10000.0*df[n,:,:]
-      title = 'Density Flux Jan 2022, at %d meter' %(dz*n)
+      var = df[n,:,:]
+      title = 'Density Flux 2022010100 at %d meter' %(int(alt[n]))
       print('title: ', title)
       plotit(lon, lat, var, title)
-      n += 20
+      n += 10
 
     ncf.close()
 
@@ -84,7 +81,7 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
-  infile = 'monthly_mean_divergence_of_density_flux_202201.nc'
+  infile = 'dfc_20220116_00.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])
