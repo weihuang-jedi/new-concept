@@ -56,3 +56,52 @@ subroutine nc_get2Dvar(ncid, var_name, var, nrec, &
 
 end subroutine nc_get2Dvar
 
+!--------------------------------------------------------------------------------------
+
+subroutine nc_get2Dvar0(ncid, var_name, var, &
+                        nxs, nxe, nys, nye)
+
+   use netcdf
+
+   implicit none
+  
+   integer, intent(in) :: ncid
+   integer, intent(in) :: nxs, nxe, nys, nye
+
+   character(len = *), intent(in) :: var_name
+   real*4, dimension(nxs:nxe, nys:nye), intent(out) :: var
+
+   integer, dimension(2) :: start, count
+
+ ! Variable id
+   integer :: varid
+
+ ! Return status
+   integer :: status
+
+   status = nf90_inq_varid(ncid, var_name, varid)
+   if(status /= nf90_noerr) then 
+       write(unit=0, fmt='(3a)') "Problem to get id for: <", trim(var_name), ">.", &
+                                 "Error status: ", trim(nf90_strerror(status))
+       write(unit=0, fmt='(3a, i4)') &
+            "Stop in file: <", __FILE__, ">, line: ", __LINE__
+       stop
+   end if
+
+   start(1) = nxs
+   start(2) = nys
+
+   count(1) = nxe - nxs + 1
+   count(2) = nye - nys + 1
+
+   status = nf90_get_var(ncid,varid,var,start=start(1:3),count=count(1:3))
+   if(status /= nf90_noerr) then
+       write(unit=0, fmt='(3a)') "Problem to read: <", trim(var_name), ">.", &
+                                "Error status: ", trim(nf90_strerror(status))
+       write(unit=0, fmt='(3a, i4)') &
+            "Stop in file: <", __FILE__, ">, line: ", __LINE__
+       stop
+   end if
+
+end subroutine nc_get2Dvar0
+

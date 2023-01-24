@@ -8,7 +8,9 @@ module status_module
 
   implicit none
 
+  private
   public :: check_status
+  public :: check_minmax2d
 
 contains
 
@@ -26,6 +28,32 @@ contains
     end if
 
   end subroutine check_status  
+
+  !----------------------------------------------------------------------
+  subroutine check_minmax2d(nx, ny, var, symbol)
+
+    implicit none
+
+    integer, intent(in) :: nx, ny
+    real, dimension(nx, ny), intent(in) :: var
+    character(len=*), intent(in) :: symbol
+
+    integer :: i, j
+    real :: vmin, vmax
+
+    vmin = 1.0e32
+    vmax = -1.0e32
+
+    do j = 1, ny
+    do i = 1, nx
+       if(var(i,j) > vmax) vmax = var(i,j)
+       if(var(i,j) < vmin) vmin = var(i,j)
+    end do
+    end do
+
+    print *, trim(symbol), ' min: ', vmin, ', max: ', vmax
+
+  end subroutine check_minmax2d
 
 end module status_module
 

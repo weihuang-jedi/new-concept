@@ -25,9 +25,9 @@ module pressure_module
      integer                               :: dimid_lon, dimid_lat, dimid_lev, &
                                               dimid_time
      integer                               :: nlon, nlat, nlev, ntime
-     real,    dimension(:),    allocatable :: lon, lat, lev, ftime
-     integer, dimension(:, :), allocatable :: v2d, ter, psl
-     integer, dimension(:, :, :), allocatable :: v3d, p3d, z3d
+     real, dimension(:),    allocatable    :: lon, lat, lev, ftime
+     real, dimension(:, :), allocatable    :: v2d, ter, psl
+     real, dimension(:, :, :), allocatable :: v3d, p3d, z3d
   end type pressuregrid
 
   !-----------------------------------------------------------------------
@@ -75,6 +75,7 @@ contains
   subroutine read_pressure_grid(input_flnm, pgrid)
 
     use netcdf
+    use status_module
 
     implicit none
 
@@ -159,6 +160,16 @@ contains
 
    !read lev
     call nc_get1Dvar0(fileid, 'lv_ISBL0', pgrid%lev, 1, pgrid%nlev)
+
+   !read ter
+    call nc_get2Dvar0(fileid, 'HGT_P0_L1_GLL0', pgrid%ter, 1, pgrid%nlon, 1, pgrid%nlat)
+
+    call check_minmax2d(pgrid%nlon, pgrid%nlat, pgrid%ter, 'Ter')
+
+   !read psl
+    call nc_get2Dvar0(fileid, 'PRMSL_P0_L101_GLL0', pgrid%psl, 1, pgrid%nlon, 1, pgrid%nlat)
+
+    call check_minmax2d(pgrid%nlon, pgrid%nlat, pgrid%psl, 'PSL')
 
    !status =  nf90_close(fileid)
    !call check_status(status)
