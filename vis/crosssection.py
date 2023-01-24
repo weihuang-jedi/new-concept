@@ -16,9 +16,9 @@ import cartopy.mpl.ticker as cticker
 
 import netCDF4 as nc4
 
-#import tkinter
-#import matplotlib
-#matplotlib.use('TkAgg')
+import tkinter
+import matplotlib
+matplotlib.use('TkAgg')
 #=========================================================================
 class CrossSectionPlot():
   def __init__(self, debug=0, output=0):
@@ -140,13 +140,13 @@ if __name__== '__main__':
  #datafile = '%s/annual_grad_cate.nc' %(datadir)
  #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
  #datafile = '%s/grad_cate_20220116_00.nc' %(datadir)
- #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
- #datafile = '%s/state_cate_202112.nc' %(datadir)
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/'
-  datafile = '%s/grad_cate_20220116_00.nc' %(datadir)
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
+  datafile = '%s/grad_cate_202112.nc' %(datadir)
+ #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/'
+ #datafile = '%s/grad_cate_20220116_00.nc' %(datadir)
 
-  title = 'Annual 2022'
-  imagename = 'annual_2022'
+  title = 'DEC 2021'
+  imagename = 'dec_2021'
 
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile=',
                                                 'title=', 'imagename='])
@@ -183,7 +183,7 @@ if __name__== '__main__':
   csp.set_clevs(clevs=clevs)
   csp.set_cblevs(cblevs=cblevs)
 
-  for i in range(0, 720, 60):
+  for i in range(0, 720, 120):
     lon = int(i/2) - 180
     cscate = cate[:,:,i]
     if(lon < 0):
@@ -197,7 +197,7 @@ if __name__== '__main__':
     csp.set_title(tname)
     csp.set_imagename(iname)
 
-    csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
+    csp.plot(lats, alts[0:400], cscate[0:400, :], ymax=20000)
 
   cscate = np.average(cate, axis=2)
   tname = 'gfs Zonal Mean Atmospheric Catalog %s' %(title)
@@ -207,4 +207,5 @@ if __name__== '__main__':
   csp.set_title(tname)
   csp.set_imagename(iname)
 
-  csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
+  csp.plot(lats, alts[0:400], cscate[0:400, :], ymax=20000)
+

@@ -93,5 +93,5 @@ load "categorical.ncl"
  VIMFC@long_name = "VIMFC"
 
 ;-----------------------------------------------------------------------------------------
- write_mfc(duvq, VIMFC, f)
+ write_mfc(duvq, VIMFC, fo)
 
