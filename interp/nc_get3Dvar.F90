@@ -64,7 +64,7 @@ subroutine nc_get3Dvar0(ncid, var_name, var, &
    integer, intent(in) :: nxs, nxe, nys, nye, nzs, nze
 
    character(len = *), intent(in) :: var_name
-   real*4, dimension(nxs:nxe, nys:nye, nzs:nze), intent(out) :: var
+   real, dimension(nxs:nxe, nys:nye, nzs:nze), intent(out) :: var
 
    integer, dimension(3) :: start, count
 

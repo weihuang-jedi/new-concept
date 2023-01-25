@@ -34,7 +34,9 @@ OBJS =	namelist_module.o \
 	nc_putGlobalRealAttr.o \
 	nc_putGlobalCharAttr.o \
 	status_module.o \
-	pressure_module.o
+	altitude_module.o \
+	pressure_module.o \
+	interp_module.o
 
 ####################################################
 
@@ -42,7 +44,9 @@ deflt :	clean_modulde nc4_lib interp
 
 clean_modulde :
 	$(RM) namelist_module.o namelist_module.mod \
-	pressure_module.o pressure_module.mod
+	altitude_module.o altitude_module.mod \
+	pressure_module.o pressure_module.mod \
+	interp_module.o interp_module.mod
 
 nc4_lib : $(OBJS)
 	$(RM) libnc4.a
@@ -63,8 +67,13 @@ clean :
 
 interp.o : interp.F90 \
 		namelist_module.o \
-		pressure_module.o
+		pressure_module.o \
+		interp_module.o
 
 pressure_module.o : pressure_module.F90 \
+		status_module.o
+
+altitude_module.o : altitude_module.F90 \
+		pressure_module.o \
 		status_module.o
 

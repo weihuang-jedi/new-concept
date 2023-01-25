@@ -94,7 +94,7 @@ subroutine nc_get2Dvar0(ncid, var_name, var, &
    count(1) = nxe - nxs + 1
    count(2) = nye - nys + 1
 
-   status = nf90_get_var(ncid,varid,var,start=start(1:3),count=count(1:3))
+   status = nf90_get_var(ncid,varid,var,start=start(1:2),count=count(1:2))
    if(status /= nf90_noerr) then
        write(unit=0, fmt='(3a)') "Problem to read: <", trim(var_name), ">.", &
                                 "Error status: ", trim(nf90_strerror(status))

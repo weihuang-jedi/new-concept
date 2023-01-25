@@ -11,6 +11,7 @@ module status_module
   private
   public :: check_status
   public :: check_minmax2d
+  public :: check_minmax3d
 
 contains
 
@@ -54,6 +55,34 @@ contains
     print *, trim(symbol), ' min: ', vmin, ', max: ', vmax
 
   end subroutine check_minmax2d
+
+  !----------------------------------------------------------------------
+  subroutine check_minmax3d(nx, ny, nz, var, symbol)
+
+    implicit none
+
+    integer, intent(in) :: nx, ny, nz
+    real, dimension(nx, ny, nz), intent(in) :: var
+    character(len=*), intent(in) :: symbol
+
+    integer :: i, j, k
+    real :: vmin, vmax
+
+    vmin = 1.0e32
+    vmax = -1.0e32
+
+    do k = 1, nz
+    do j = 1, ny
+    do i = 1, nx
+       if(var(i,j,k) > vmax) vmax = var(i,j,k)
+       if(var(i,j,k) < vmin) vmin = var(i,j,k)
+    end do
+    end do
+    end do
+
+    print *, trim(symbol), ' min: ', vmin, ', max: ', vmax
+
+  end subroutine check_minmax3d
 
 end module status_module
 

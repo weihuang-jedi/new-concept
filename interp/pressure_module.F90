@@ -26,8 +26,8 @@ module pressure_module
                                               dimid_time
      integer                               :: nlon, nlat, nlev, ntime
      real, dimension(:),    allocatable    :: lon, lat, lev, ftime
-     real, dimension(:, :), allocatable    :: v2d, ter, psl
-     real, dimension(:, :, :), allocatable :: v3d, p3d, z3d
+     real, dimension(:, :), allocatable    :: ter, psl
+     real, dimension(:, :, :), allocatable :: z3d
   end type pressuregrid
 
   !-----------------------------------------------------------------------
@@ -50,12 +50,9 @@ contains
     pgrid%nlev = nlev
     pgrid%ntime = ntime
 
-    allocate(pgrid%v2d(nlon, nlat))
     allocate(pgrid%ter(nlon, nlat))
     allocate(pgrid%psl(nlon, nlat))
-    allocate(pgrid%v3d(nlon, nlat, nlev+1))
-    allocate(pgrid%p3d(nlon, nlat, nlev+1))
-    allocate(pgrid%z3d(nlon, nlat, nlev+1))
+    allocate(pgrid%z3d(nlon, nlat, nlev))
 
     allocate(pgrid%lon(nlon))
     allocate(pgrid%lat(nlat))
@@ -88,7 +85,7 @@ contains
 !   integer, dimension(:), allocatable :: varids
 
     character(len=128) :: dimname
-    integer :: status, i, include_parents, dimsize
+    integer :: status, i, include_parents, dimsize, j, k
 
    !print *, 'Start Read pgrid grid info from file: ', trim(input_flnm)
    !print *, 'File: ', __FILE__, ', line: ', __LINE__
@@ -171,6 +168,12 @@ contains
 
     call check_minmax2d(pgrid%nlon, pgrid%nlat, pgrid%psl, 'PSL')
 
+   !read hgt
+    call nc_get3Dvar0(fileid, 'HGT_P0_L100_GLL0', pgrid%z3d, 1, pgrid%nlon, &
+                      1, pgrid%nlat, 1, pgrid%nlev)
+
+    call check_minmax3d(pgrid%nlon, pgrid%nlat, pgrid%nlev, pgrid%z3d, 'HGT')
+
    !status =  nf90_close(fileid)
    !call check_status(status)
 
@@ -204,11 +207,8 @@ contains
     if(allocated(pgrid%ftime)) deallocate(pgrid%ftime)
     if(allocated(pgrid%dimids)) deallocate(pgrid%dimids)
 
-    deallocate(pgrid%v2d)
     deallocate(pgrid%ter)
     deallocate(pgrid%psl)
-    deallocate(pgrid%v3d)
-    deallocate(pgrid%p3d)
     deallocate(pgrid%z3d)
 
     rc =  nf90_close(pgrid%ncid)
