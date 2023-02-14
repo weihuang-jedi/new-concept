@@ -25,10 +25,12 @@ end
 ;fili = "grad_cate_202112.nc"
 ;diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
 ;fili = "grad_cate_20220116_00.nc"
- diri = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
- fili = "p_grad_grad_annual_grad_cate.nc"
- imgstr = "annual_2022_grad_cate"
- titlestr = "Annual 2022"
+;diri = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
+;fili = "p_grad_grad_annual_grad_cate.nc"
+ diri = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/"
+ fili = "grad_cate_20221201_00.nc"
+ imgstr = "dec_2022_grad_cate"
+ titlestr = "Dec 2022"
 
 ;info = readinfo("datainfo.txt")
 

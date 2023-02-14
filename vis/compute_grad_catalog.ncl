@@ -29,8 +29,8 @@ undef("compute_grad_catalog")
 procedure compute_grad_catalog(fi:string, fo:string)
 begin
   f = addfile(fi,"r")
-  T = f->T(:, :, :)
-  P = f->P(:, :, :)
+  T = f->t(:, :, :)
+  P = f->p(:, :, :)
   Rho = P / (287.0*T)
 
   T@long_name = "T"                     ; short name for plot labeling clarity
@@ -45,6 +45,8 @@ begin
   imgname = "catelog_section"
   
 ;************************************************
+ T = smth9_Wrap(T, 0.50, 0.25, True)
+ T = smth9_Wrap(T, 0.50, 0.25, True)
  tlst = get_gradient(T)
  TX = tlst[0]
  TY = tlst[1]
@@ -57,6 +59,8 @@ begin
  TY = smth9_Wrap(TY, 0.50, 0.25, True)
 
 ;************************************************
+ Rho = smth9_Wrap(Rho, 0.50, 0.25, True)
+ Rho = smth9_Wrap(Rho, 0.50, 0.25, True)
  rlst = get_gradient(Rho)
  RX = rlst[0]
  RY = rlst[1]
@@ -69,6 +73,8 @@ begin
  RY = smth9_Wrap(RY, 0.50, 0.25, True)
 
 ;************************************************
+ P = smth9_Wrap(P, 0.50, 0.25, True)
+ P = smth9_Wrap(P, 0.50, 0.25, True)
  plst = get_gradient(P)
  PX = plst[0]
  PY = plst[1]

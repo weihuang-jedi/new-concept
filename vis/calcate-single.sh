@@ -15,13 +15,11 @@
 
  cd /work2/noaa/gsienkf/weihuang/gfs/vis
 
-#ncl compute_grad_catalog.ncl \
-#   'diri="/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/"' \
-#   'fili="hl_monthly_mean_gfs_4_202212.nc"' \
-#   'filo="monthly_mean_grad_cate.nc"'
+cat > datainfo.txt << EOF
+/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/
+z_gfs_4_20221201_00.nc
+grad_cate_20221201_00.nc
+EOF
 
- ncl compute_grad_catalog.ncl \
-    'diri="/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/"' \
-    'fili="hl_gfs_4_20221216_0000_000.nc"' \
-    'filo="grad_gfs_4_20221216_0000_000.nc"'
+ ncl compute_grad_catalog.ncl
 
