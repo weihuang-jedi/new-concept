@@ -4,9 +4,10 @@
 #SBATCH -n 40
 #SBATCH -t 06:00:00
 #SBATCH -A gsienkf
-#SBATCH --partition=orion
-#SBATCH --job-name=calcate
-#SBATCH --output=log.calcate
+##SBATCH --partition=orion
+#SBATCH --partition=bigmem
+#SBATCH --job-name=caldfc
+#SBATCH --output=log.caldfc
 
  module load ncl
 
@@ -15,5 +16,5 @@
 
  cd /work2/noaa/gsienkf/weihuang/era5/vis
 
- ncl calculate_dfc_div.ncl
+ ncl calculate-dfc_div.ncl
 

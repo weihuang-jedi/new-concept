@@ -94,7 +94,7 @@ class Interpolate2Height():
    #print('self.alt = ', self.alt)
 
  #-----------------------------------------------------------------------------------------
-  def process(self, ztfile=None, uvfile=None, sffile=None, outfile=None):
+  def process(self, ztfile=None, sffile=None, outfile=None):
     print('outfile: ', outfile)
 
     if(os.path.exists(ztfile)):
@@ -102,13 +102,6 @@ class Interpolate2Height():
       nczt = nc4.Dataset(ztfile, 'r')
     else:
       print('upper file: %s does not exist. Stop' %(ztfile))
-      sys.exit(-1)
-
-    if(os.path.exists(uvfile)):
-      print('Processing %s' %(uvfile))
-      ncuv = nc4.Dataset(uvfile, 'r')
-    else:
-      print('uvq file: %s does not exist. Stop' %(uvfile))
       sys.exit(-1)
 
     if(os.path.exists(sffile)):
@@ -187,13 +180,12 @@ class Interpolate2Height():
     print('z column:', self.z[0,::-1,0,0])
 
     self.newdims = ('time', 'alt', 'lat', 'lon')
-    self.cal_v_height('u', 'u10', ncuv, ncsfc, ncout)
-    self.cal_v_height('v', 'v10', ncuv, ncsfc, ncout)
+    self.cal_v_height('u', 'u10', nczt, ncsfc, ncout)
+    self.cal_v_height('v', 'v10', nczt, ncsfc, ncout)
     self.cal_v_height('t', 't2m', nczt, ncsfc, ncout)
     self.cal_3d_prs(nczt, ncsfc, ncout)
 
     nczt.close()
-    ncuv.close()
     ncsfc.close()
     ncout.close()
 
@@ -310,9 +302,8 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
-  zt_file = 'monthly_mean_dec2021.nc'
-  sfcfile = 'monthly_mean_dec2021_surfvar.nc'
-  uvqfile = 'monthly_mean_dec2021_uvq.nc'
+  atmfile = 'era5_monthly_atm_2022.nc'
+  sfcfile = 'era5_monthly_surf_2022.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'zt_file=',
@@ -333,9 +324,8 @@ if __name__== '__main__':
 
  #-----------------------------------------------------------------------------------------
   i2h = Interpolate2Height(debug=debug)
-  ztfile = '%s/%s' %(datadir, zt_file)
-  uvfile = '%s/%s' %(datadir, uvqfile)
+  ztfile = '%s/%s' %(datadir, airfile)
   sffile = '%s/%s' %(datadir, sfcfile)
-  outfile = '%s/hl_monthly_mean_uvtp.nc' %(datadir)
-  i2h.process(ztfile=ztfile, uvfile=uvfile, sffile=sffile, outfile=outfile)
+  outfile = '%s/hl_monthly_mean_2022.nc' %(datadir)
+  i2h.process(ztfile=ztfile, sffile=sffile, outfile=outfile)
 

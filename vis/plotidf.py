@@ -17,17 +17,20 @@ def plotit(x, y, z, title):
   X, Y = np.meshgrid(x, y)
 
   print('Plotting ', title)
+  print('z.min: %f, z.max: %f' %(np.min(z), np.max(z)))
    
   fig = plt.figure(figsize=(10, 5))
   ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
   proj = ccrs.PlateCarree()
 
+ #levels = np.linspace(-10.0, 10.0, 21)
   levels = np.linspace(-1.0, 1.0, 21)
  #cmap='nipy_spectral'
  #cmap='jet'
- #cmap='bwr'
-  cmap='seismic'
+  cmap='bwr'
+ #cmap='seismic'
   cs = ax.contourf(X, Y, z, levels, transform=proj, cmap=cmap)
+ #cs = ax.contourf(X, Y, z, transform=proj, cmap=cmap)
  #cbar = plt.colorbar(cs, orientation='horizontal', shrink=0.85)
   cbar = plt.colorbar(cs, ax=ax, orientation='horizontal', pad=.1, fraction=0.06,)
   ax.set_extent([-180, 180, -90, 90], crs=proj)
@@ -71,7 +74,7 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
-  infile = 'monthly_mean_df.nc'
+  infile = 'df.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])
@@ -87,6 +90,5 @@ if __name__== '__main__':
 
  #-----------------------------------------------------------------------------------------
   pv = PlotVariable(debug=debug)
-  flnm = '%s/%s' %(datadir, infile)
-  pv.process(flnm=flnm)
+  pv.process(flnm=infile)
 

@@ -9,6 +9,8 @@
 #SBATCH --job-name=interp
 #SBATCH --output=log.interp
 
+ source ~/visenv
+
  ulimit -S unlimited
  ulimit -c unlimited
 
@@ -21,8 +23,7 @@
 #       --sfcfile=dec2021_surfvar.nc
 
  time python interp2height.py --debug=0 \
-	--datadir=/work2/noaa/gsienkf/weihuang/era5/daily-data \
-	--upfile=2022dec15-00.nc \
-	--uvfile=2022dec15-00.nc \
-	--sfcfile=2022dec15-00_sfcdata.nc
+	--datadir=/work2/noaa/gsienkf/weihuang/era5/data \
+	--upfile=era5_monthly_atm_2022.nc \
+	--sfcfile=era5_monthly_surf_2022.nc
 

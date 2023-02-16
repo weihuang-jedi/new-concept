@@ -18,8 +18,10 @@ end
  r = 287.0
 
  diri = "/work2/noaa/gsienkf/weihuang/era5/data/"
- flnm = "hl_monthly_mean_uvtp.nc"
- ofile = "monthly_mean_df.nc"
+;flnm = "hl_monthly_mean_uvtp.nc"
+;ofile = "monthly_mean_df.nc"
+ flnm = "hl_uvtp.nc"
+ ofile = "df.nc"
 
  path = diri+flnm      
 

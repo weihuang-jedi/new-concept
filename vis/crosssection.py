@@ -136,18 +136,21 @@ class CrossSectionPlot():
 if __name__== '__main__':
   debug = 1
   output = 0
- #datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
- #datafile = '%s/grad_cate_202112.nc' %(datadir)
+  datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
+  datafile = '%s/grad_cate_202112.nc' %(datadir)
  #datafile = '%s/state_cate_202112.nc' %(datadir)
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/daily-data/'
-  datafile = '%s/grad_cate_2022121500.nc' %(datadir)
+ #datadir = '/work2/noaa/gsienkf/weihuang/era5/daily-data/'
+ #datafile = '%s/grad_cate_2022121500.nc' %(datadir)
 
  #title = 'Zonal Averaged Annual Atmospheric Catalog'
  #imagename = 'zonal_averaged_annual.png'
 
-  title = 'Zonal Averaged Annual Atmospheric Catalog 2022121500'
-  imagename = 'zonal_averaged_2022121500.png'
+  title = 'Zonal Averaged Annual Atmospheric Catalog 202112'
+  imagename = 'zonal_averaged_202112.png'
+
+ #title = 'Zonal Averaged Annual Atmospheric Catalog 2022121500'
+ #imagename = 'zonal_averaged_2022121500.png'
 
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile=',
                                                 'title=', 'imagename='])
@@ -189,22 +192,18 @@ if __name__== '__main__':
     lon = int(i/2) - 180
     cscate = cate[:,:,i]
     if(lon < 0):
-     #title = 'era5 Atmospheric Systems Catalog DEC 2021 at Lon %dW' %(-lon)
-     #imagename = 'era5_dec2021_at_lon_%dW.png' %(-lon)
-      title = 'era5 Atmospheric Systems Catalog 2022121500 at Lon %dW' %(-lon)
-      imagename = 'era5_2022121500_at_lon_%dW.png' %(-lon)
+      title = 'era5 Atmospheric Systems Catalog 202212 at Lon %dW' %(-lon)
+      imagename = 'era5_202112_at_lon_%dW.png' %(-lon)
     else:
-     #title = 'era5 Atmospheric Systems Catalog DEC 2021 at Lon %dE' %(lon)
-     #imagename = 'era5_dec2021_at_lon_%dE.png' %(lon)
-      title = 'era5 Atmospheric Systems Catalog 2022121500 at Lon %dE' %(lon)
-      imagename = 'era5_2022121500_at_lon_%dE.png' %(lon)
+      title = 'era5 Atmospheric Systems Catalog 202212 at Lon %dE' %(lon)
+      imagename = 'era5_202112_at_lon_%dE.png' %(lon)
 
     print('title = ', title)
     print('imagename = ', imagename)
     csp.set_title(title)
     csp.set_imagename(imagename)
 
-    csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
+    csp.plot(lats, alts[0:400], cscate[0:400, :], ymax=20000)
 
   cscate = np.average(cate, axis=2)
   title = 'era5 Zonal Averaged Atmospheric Systems Catalog DEC 2021'
@@ -214,4 +213,5 @@ if __name__== '__main__':
   csp.set_title(title)
   csp.set_imagename(imagename)
 
-  csp.plot(lats, alts[0:200], cscate[0:200, :], ymax=10000)
+  csp.plot(lats, alts[0:400], cscate[0:400, :], ymax=20000)
+

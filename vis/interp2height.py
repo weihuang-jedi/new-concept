@@ -94,7 +94,7 @@ class Interpolate2Height():
    #print('self.alt = ', self.alt)
 
  #-----------------------------------------------------------------------------------------
-  def process(self, ztfile=None, uvfile=None, sffile=None, outfile=None):
+  def process(self, ztfile=None, sffile=None, outfile=None):
     print('outfile: ', outfile)
 
     if(os.path.exists(ztfile)):
@@ -102,13 +102,6 @@ class Interpolate2Height():
       nczt = nc4.Dataset(ztfile, 'r')
     else:
       print('upper file: %s does not exist. Stop' %(ztfile))
-      sys.exit(-1)
-
-    if(os.path.exists(uvfile)):
-      print('Processing %s' %(uvfile))
-      ncuv = nc4.Dataset(uvfile, 'r')
-    else:
-      print('uvq file: %s does not exist. Stop' %(uvfile))
       sys.exit(-1)
 
     if(os.path.exists(sffile)):
@@ -173,21 +166,17 @@ class Interpolate2Height():
           ncout.variables[name][:] = self.time
 
     zv = nczt.variables['z']
-    self.z = zv[:,:,:,:]
-   #offset = getattr(zv, 'add_offset')
-   #scale_factor = getattr(zv, 'scale_factor')
-   #self.z = scale_factor*self.z + offset
+    self.z = zv[:,0,:,:,:]
 
     print('z column:', self.z[0,::-1,0,0])
 
     self.newdims = ('time', 'alt', 'lat', 'lon')
-    self.cal_v_height('u', 'u10', ncuv, ncsfc, ncout)
-    self.cal_v_height('v', 'v10', ncuv, ncsfc, ncout)
+    self.cal_v_height('u', 'u10', nczt, ncsfc, ncout)
+    self.cal_v_height('v', 'v10', nczt, ncsfc, ncout)
     self.cal_v_height('t', 't2m', nczt, ncsfc, ncout)
     self.cal_3d_prs(nczt, ncsfc, ncout)
 
     nczt.close()
-    ncuv.close()
     ncsfc.close()
     ncout.close()
 
@@ -205,21 +194,17 @@ class Interpolate2Height():
     hnew[0] = 0.0
 
     slpvar = ncsfc.variables['msl']
-   #offset = getattr(slpvar, 'add_offset')
-   #scale_factor = getattr(slpvar, 'scale_factor')
 
     for nt in range(self.ntime):
       print('Workin on cal_3d_prs time level: ', nt)
 
-      slp = slpvar[nt,:,:]
-     #slp = 100.0*(scale_factor*slp + offset)
-     #print('slp:', slp[0,0])
+      slp = slpvar[nt,0,:,:]
 
       mlat = self.nlat
       for lat in range(self.nlat):
         mlat -= 1
         for lon in range(self.nlon):
-          hori = self.z[nt,::-1,lat,lon]
+          hori = self.z[nt,0,::-1,lat,lon]
           if(hori[0] > 0.0):
             pnew[0] = slp[lat, lon]
             hnew[1:npl+1] = hori[:]
@@ -236,12 +221,7 @@ class Interpolate2Height():
  #-----------------------------------------------------------------------------------------
   def cal_v_height(self, uname, sname, ncin, ncsfc, ncout):
     upv = ncin.variables[uname]
-   #u_offset = getattr(upv, 'add_offset')
-   #u_scale_factor = getattr(upv, 'scale_factor')
-
     sfv = ncsfc.variables[sname]
-   #s_offset = getattr(sfv, 'add_offset')
-   #s_scale_factor = getattr(sfv, 'scale_factor')
 
     hvar = np.zeros([self.nalt, self.nlat, self.nlon])
    #v4d = ncout.createVariable(uname, float, self.newdims, compression='zlib')
@@ -255,16 +235,16 @@ class Interpolate2Height():
 
     for nt in range(self.ntime):
       print('Workin on cal_v_height for %s at time level: %d' %(uname, nt))
-     #vup = u_offset*upv[nt,:,:,:] + u_scale_factor
-     #vsf = s_offset*sfv[nt,:,:] + s_scale_factor
-      vup = upv[nt,:,:,:]
-      vsf = sfv[nt,:,:]
+      vup = upv[nt,0,:,:,:]
+      vsf = sfv[nt,0,:,:]
       mlat = self.nlat
       for lat in range(self.nlat):
         mlat -= 1
         for lon in range(self.nlon):
           hori = self.z[nt,::-1,lat,lon]
           vori = vup[::-1,lat,lon]
+         #print('hori.shape = ', hori.shape)
+         #print('vori.shape = ', vori.shape)
           if(hori[0] > 0.0):
             hnew[1:npl+1] = hori[:]
             vnew[0] = vsf[lat,lon]
@@ -304,32 +284,27 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/era5/daily-data'
-  zt_file = '2022dec15-00.nc'
-  sfcfile = '2022dec15-00_sfcdata.nc'
-  uvqfile = '2022dec15-00.nc'
+  upfile = 'era5_monthly_atm_2022.nc'
+  sfcfile = 'era5_monthly_surf_2022.nc'
 
  #-----------------------------------------------------------------------------------------
-  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'zt_file=',
-                                                'sfcfile=', 'uvqfile='])
+  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'upfile=', 'sfcfile='])
   for o, a in opts:
     if o in ('--debug'):
       debug = int(a)
     elif o in ('--datadir'):
       datadir = a
-    elif o in ('--zt_file'):
-      zt_file = a
+    elif o in ('--upfile'):
+      upfile = a
     elif o in ('--sfcfile'):
       sfcfile = a
-    elif o in ('--uvqfile'):
-      uvqfile = a
     else:
       assert False, 'unhandled option'
 
  #-----------------------------------------------------------------------------------------
   i2h = Interpolate2Height(debug=debug)
-  ztfile = '%s/%s' %(datadir, zt_file)
-  uvfile = '%s/%s' %(datadir, uvqfile)
+  ztfile = '%s/%s' %(datadir, upfile)
   sffile = '%s/%s' %(datadir, sfcfile)
-  outfile = '%s/hl_uvtp.nc' %(datadir)
-  i2h.process(ztfile=ztfile, uvfile=uvfile, sffile=sffile, outfile=outfile)
+  outfile = '%s/hl_2022.nc' %(datadir)
+  i2h.process(ztfile=ztfile, sffile=sffile, outfile=outfile)
 
