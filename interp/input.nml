@@ -1,9 +1,9 @@
 &control_param
- input_flnm = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/gfs_4_20221201_0000_000.nc"
- output_flnm = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/z_gfs_4_20221201_00.nc"
- nlon = 720
- nlat = 361
- nlev = 41
+ input_flnm = "/work2/noaa/da/weihuang/cycling/gsi_C96_lgetkf_psonly/2020010112/sanl_2020010112_fhr06_ensmean"
+ output_flnm = "./z_sanl_2020010112_fhr06_ensmean"
+ nlon = 384
+ nlat = 192
+ nlev = 127
  ntime = 1
  nalt = 251
  dz = 100.0

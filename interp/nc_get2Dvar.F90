@@ -28,7 +28,7 @@ subroutine nc_get2Dvar(ncid, var_name, var, nrec, &
  ! Return status
    integer :: status
 
-   status = nf90_inq_varid(ncid, var_name, varid)
+   status = nf90_inq_varid(ncid, trim(var_name), varid)
    if(status /= nf90_noerr) then 
        write(unit=0, fmt='(3a)') "Problem to get id for: <", trim(var_name), ">.", &
                                  "Error status: ", trim(nf90_strerror(status))
