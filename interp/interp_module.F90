@@ -23,7 +23,7 @@ contains
     real, intent(in) :: z, za, zb, va, vb
     real :: p2z
 
-    p2z = vb + (z-za)*(vb - va)/(zb - za)
+    p2z = va + (z-za)*(vb - va)/(zb - za)
 
   end function p2z
 
@@ -50,12 +50,9 @@ contains
     do k = 1, zgrid%nalt
       !print *, 'i,j,k,jgfs,kgfs = ', i,j,k,jgfs,kgfs
       !print *, 'zgrid%alt(k) = ', zgrid%alt(k)
-      !print *, 'pgrid%zf(i,jgfs,pgrid%nlev) = ', pgrid%zf(i,jgfs,pgrid%nlev)
 
-       if(zgrid%alt(k) < pgrid%zf(i,jgfs,pgrid%nlev)) then
-         if(pgrid%zh(i,jgfs,pgrid%nlev+1) < 1.0) then
-           v3d(i,j,k) = pgrid%psf(i,jgfs)
-         else
+       if(zgrid%alt(k) <= pgrid%zf(i,jgfs,pgrid%nlev)) then
+         if(zgrid%alt(k) <= pgrid%zh(i,jgfs,pgrid%nlev+1)) then
            v3d(i,j,k) = p2z(zgrid%alt(k), pgrid%zh(i,jgfs,pgrid%nlev+1), &
                                           pgrid%zh(i,jgfs,pgrid%nlev), &
                                           pgrid%ph(i,jgfs,pgrid%nlev+1), &
@@ -68,8 +65,8 @@ contains
                                         pgrid%ph(i,jgfs,2))
        else
          do while(kgfs > 1)
-           if((zgrid%alt(k) < pgrid%zf(i,jgfs,kgfs)) .and. &
-              (zgrid%alt(k) >= pgrid%zf(i,jgfs,kgfs-1))) then
+           if((zgrid%alt(k) > pgrid%zf(i,jgfs,kgfs)) .and. &
+              (zgrid%alt(k) <= pgrid%zf(i,jgfs,kgfs-1))) then
               v3d(i,j,k) = p2z(zgrid%alt(k), pgrid%zf(i,jgfs,kgfs-1), &
                                              pgrid%zf(i,jgfs,kgfs), &
                                              pgrid%pf(i,jgfs,kgfs-1), &
@@ -83,16 +80,25 @@ contains
     end do
     end do
 
+   !i = 1
+   !j = 1
+   !do k = 1, zgrid%nalt
+   !   print *, 'zgrid%alt(k) = ', zgrid%alt(k), ', v3d(i,j,k) =', v3d(i,j,k)
+   !end do
+   !do k = 1, pgrid%nlev
+   !   print *, 'pgrid%zf(i,j,k) = ', pgrid%zf(i,j,k), ', pgrid%pf(i,j,k) = ', pgrid%pf(i,j,k)
+   !end do
+
    !write p
     call nc_put3Dvar0(zgrid%ncid, 'p', v3d, 1, zgrid%nlon, &
                       1, zgrid%nlat, 1, zgrid%nalt)
 
-    call check_minmax3d(zgrid%nlon, zgrid%nlat, zgrid%nalt, v3d, 'Pressure')
+   !call check_minmax3d(zgrid%nlon, zgrid%nlat, zgrid%nalt, v3d, 'Pressure')
 
-    do k = 1, zgrid%nalt
-      !print *, 'Altitude: ', zgrid%alt(k)
-       call check_minmax2d(zgrid%nlon, zgrid%nlat, v3d(:,:,k), 'P at level')
-    end do
+   !do k = 1, zgrid%nalt
+   !  !print *, 'Altitude: ', zgrid%alt(k)
+   !   call check_minmax2d(zgrid%nlon, zgrid%nlat, v3d(:,:,k), 'P at level')
+   !end do
 
     deallocate(v3d)
 
@@ -135,8 +141,8 @@ contains
          v3d(i,j,k) = p3d(i,jgfs,1)
        else
          do while(kgfs > 1)
-           if((zgrid%alt(k) < pgrid%zf(i,jgfs,kgfs)) .and. &
-              (zgrid%alt(k) >= pgrid%zf(i,jgfs,kgfs-1))) then
+           if((zgrid%alt(k) > pgrid%zf(i,jgfs,kgfs)) .and. &
+              (zgrid%alt(k) <= pgrid%zf(i,jgfs,kgfs-1))) then
               v3d(i,j,k) = p2z(zgrid%alt(k), pgrid%zf(i,jgfs,kgfs-1), &
                                pgrid%zf(i,jgfs,kgfs), &
                                p3d(i,jgfs,kgfs-1), p3d(i,jgfs,kgfs))

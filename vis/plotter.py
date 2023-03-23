@@ -229,8 +229,8 @@ class GeneratePlot():
 if __name__== '__main__':
   debug = 1
   output = 0
-  datadir = '/work2/noaa/da/weihuang/cycling/scripts/new-concept/interp'
-  datafile = '%s/z_sanl_2020010112_fhr06_ensmean' %(datadir)
+  datadir = '/work2/noaa/da/weihuang/cycling/gsi_C96_lgetkf_psonly/2020010112'
+  datafile = '%s/sanl_2020010112_fhr06_ensmean' %(datadir)
 
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile='])
   for o, a in opts:
@@ -248,58 +248,34 @@ if __name__== '__main__':
 
   ncf = nc4.Dataset(datafile, 'r')
 
-  lats = ncf.variables['lat'][:]
-  lons = ncf.variables['lon'][:]
+  lats = ncf.variables['grid_yt'][:]
+  lons = ncf.variables['grid_xt'][:]
 
 #-----------------------------------------------------------------------------------------
-  grav = 9.81
-  rgas = 287.05
-  hgt = ncf.variables['alt'][:]
+  ter = ncf.variables['hgtsfc'][0, :, :]
+  psf = ncf.variables['pressfc'][0, :, :]
 
- #varname = 't'
- #varname = 'u'
- #varname = 'v'
- #var = ncf.variables[varname][:, :, :]
-
-  temp = ncf.variables['t'][:, :, :]
-  pres = ncf.variables['p'][:, :, :]
-  rho = pres/(rgas*temp)
-
-  varname = 'Rho'
-  nalt, nlat, nlon = temp.shape
+  nlat, nlon = ter.shape
 
 #-----------------------------------------------------------------------------------------
+  print('nlat = %d, nlon = %d' %(nlat, nlon))
+  var = ter
+  varname = 'ter'
+  print('%s var.min: %f, var.max: %f' %(varname, np.min(var[:,:]), np.max(var[:,:])))
+  title = varname
+  gp.set_title(title)
+  imagename = '%s.png' %(varname)
+  gp.set_imagename(imagename)
+  gp.plot(lons, lats, var)
 
-  nalt, nlat, nlon = temp.shape
-  print('nlat = %d, nlat = %d, nlon = %d' %(nalt, nlat, nlon))
- #for n in range(0, int(nalt/3), 100):
-  for n in range(0, nalt, 20):
-    var = pres[n,:,:]
-    varname = 'pres'
-    print('Level %d var.min: %f, var.max: %f' %(n, np.min(var[:,:]), np.max(var[:,:])))
-    title = '%s at %f meter' %(varname, hgt[n])
-    gp.set_title(title)
-    imagename = '%s_at_%f_meter.png' %(varname, hgt[n])
-    gp.set_imagename(imagename)
-    gp.plot(lons, lats, var)
-
-    var = rho[n,:,:]
-    varname = 'rho'
-    print('Level %d var.min: %f, var.max: %f' %(n, np.min(var[:,:]), np.max(var[:,:])))
-    title = '%s at %f meter' %(varname, hgt[n])
-    gp.set_title(title)
-    imagename = '%s_at_%f_meter.png' %(varname, hgt[n])
-    gp.set_imagename(imagename)
-    gp.plot(lons, lats, var)
-
-    var = temp[n,:,:]
-    varname = 'temp'
-    print('Level %d var.min: %f, var.max: %f' %(n, np.min(var[:,:]), np.max(var[:,:])))
-    title = '%s at %f meter' %(varname, hgt[n])
-    gp.set_title(title)
-    imagename = '%s_at_%f_meter.png' %(varname, hgt[n])
-    gp.set_imagename(imagename)
-    gp.plot(lons, lats, var)
+  var = psf
+  varname = 'psf'
+  print('%s var.min: %f, var.max: %f' %(varname, np.min(var[:,:]), np.max(var[:,:])))
+  title = varname
+  gp.set_title(title)
+  imagename = '%s.png' %(varname)
+  gp.set_imagename(imagename)
+  gp.plot(lons, lats, var)
 
 #-----------------------------------------------------------------------------------------
   ncf.close()
