@@ -27,7 +27,7 @@ module pressure_module
      integer                               :: nlon, nlat, nlev, ntime
      real, dimension(:),    allocatable    :: lon, lat, lev, hlev, ftime
      real, dimension(:, :), allocatable    :: ter, psf
-     real, dimension(:, :, :), allocatable :: zf, zh, pf, ph, tf
+     real, dimension(:, :, :), allocatable :: zf, zh, pf, ph, tf, uf, vf, qf
   end type pressuregrid
 
   !-----------------------------------------------------------------------
@@ -52,11 +52,14 @@ contains
 
     allocate(pgrid%ter(nlon, nlat))
     allocate(pgrid%psf(nlon, nlat))
-    allocate(pgrid%tf(nlon, nlat, nlev))
     allocate(pgrid%zf(nlon, nlat, nlev))
     allocate(pgrid%zh(nlon, nlat, nlev+1))
     allocate(pgrid%pf(nlon, nlat, nlev))
     allocate(pgrid%ph(nlon, nlat, nlev+1))
+    allocate(pgrid%tf(nlon, nlat, nlev))
+    allocate(pgrid%uf(nlon, nlat, nlev))
+    allocate(pgrid%vf(nlon, nlat, nlev))
+    allocate(pgrid%qf(nlon, nlat, nlev))
 
     allocate(pgrid%lon(nlon))
     allocate(pgrid%lat(nlat))
@@ -182,13 +185,20 @@ contains
    !read hgt
     call nc_get3Dvar(fileid, 'delz', pgrid%zf, 1, 1, pgrid%nlon, &
                      1, pgrid%nlat, 1, pgrid%nlev)
-
    !read prs
     call nc_get3Dvar(fileid, 'dpres', pgrid%pf, 1, 1, pgrid%nlon, &
                      1, pgrid%nlat, 1, pgrid%nlev)
-
    !read tmp
     call nc_get3Dvar(fileid, 'tmp', pgrid%tf, 1, 1, pgrid%nlon, &
+                     1, pgrid%nlat, 1, pgrid%nlev)
+   !read u
+    call nc_get3Dvar(fileid, 'ugrd', pgrid%uf, 1, 1, pgrid%nlon, &
+                     1, pgrid%nlat, 1, pgrid%nlev)
+   !read v
+    call nc_get3Dvar(fileid, 'vgrd', pgrid%vf, 1, 1, pgrid%nlon, &
+                     1, pgrid%nlat, 1, pgrid%nlev)
+   !read q
+    call nc_get3Dvar(fileid, 'spfh', pgrid%qf, 1, 1, pgrid%nlon, &
                      1, pgrid%nlat, 1, pgrid%nlev)
 
    !call check_minmax3d(pgrid%nlon, pgrid%nlat, pgrid%nlev, pgrid%z3d, 'HGT')
@@ -254,11 +264,14 @@ contains
 
     deallocate(pgrid%ter)
     deallocate(pgrid%psf)
-    deallocate(pgrid%tf)
     deallocate(pgrid%zf)
     deallocate(pgrid%zh)
     deallocate(pgrid%pf)
     deallocate(pgrid%ph)
+    deallocate(pgrid%tf)
+    deallocate(pgrid%uf)
+    deallocate(pgrid%vf)
+    deallocate(pgrid%qf)
 
     rc =  nf90_close(pgrid%ncid)
     call check_status(rc)
