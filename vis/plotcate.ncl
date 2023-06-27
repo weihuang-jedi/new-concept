@@ -270,8 +270,11 @@ end
 
 ;diri = "/work2/noaa/gsienkf/weihuang/gfs/data/jan2022/"
 ;fili = "hl_monthly_mean_gfs_4_202201_000.nc"
- diri = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
- fili = "hl_annual_mean_gfs_4_2022.nc"
+;diri = "/work2/noaa/gsienkf/weihuang/gfs/data/annual/"
+;fili = "hl_annual_mean_gfs_4_2022.nc"
+ diri = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/"
+ fili = "delt2p_20221201_00.nc"
+
  f = addfile(diri+fili,"r")
 
  alt = f->alt(:)

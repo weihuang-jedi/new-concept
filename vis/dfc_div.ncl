@@ -369,7 +369,7 @@
  res@cnMaxLevelValF       =  20.0               ; max level
  res@cnMinLevelValF       = -res@cnMaxLevelValF  ; min level
  res@cnLevelSpacingF      =  1.0                ; contour interval
- res@tiMainString         = "VIMFC"
+ res@tiMainString         = "GFS VIMFC"
 
  plt = gsn_csm_contour_map(wks,VIMFC(:,:) ,res)
 

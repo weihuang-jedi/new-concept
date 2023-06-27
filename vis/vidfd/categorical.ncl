@@ -449,7 +449,7 @@ end
 
 ;----------------------------------------------------------------------
 undef("write_dfc")
-procedure write_dfc(duvr:float, iduvr:float, flnm:string)
+procedure write_dfc(vidfd:float, flnm:string)
 begin
   system("/bin/rm -f " + flnm)   ; remove any pre-existing file
   ncdf = addfile(flnm, "c")  ; open output netCDF file
@@ -459,7 +459,7 @@ begin
  ;===================================================================
   fAtt               = True            ; assign file attributes
   fAtt@title         = "NCL calculated Density Flux Divergence"
-  fAtt@source_file   = "Calculated from NCL script: cal-dfc-div"
+  fAtt@source_file   = "Calculated from NCL script: plot-vidfd.template"
   fAtt@Conventions   = "None"
   fAtt@creation_date = systemfunc ("date")
   fileattdef( ncdf, fAtt )            ; copy file attributes
@@ -468,8 +468,7 @@ begin
  ; output variables directly; NCL will call appropriate functions
  ; to write the meta data associated with each variable
  ;===================================================================
-  ncdf->duvr = duvr
-  ncdf->iduvr = iduvr
+  ncdf->vidfd = vidfd
 
   delete(ncdf)
 end

@@ -9,12 +9,21 @@ begin
 ; to compute zonal (X) and meridional (Y) gradients.
 ;************************************************
 
+ ;T = smth9_Wrap(T, 0.50, 0.25, True)
+ ;T = smth9_Wrap(T, 0.50, 0.25, True)
+
  ;pre-allocate space for return gradients
   dimT = dimsizes(T)
   TX = new( dimT, typeof(T), getFillValue(T) )  ; lon=>X
   TY = new( dimT, typeof(T), getFillValue(T) )  ; lat=>Y
 
   gradsg(T, TX, TY)     ; procedure for gaussian grids
+
+ ;TX = smth9_Wrap(TX, 0.50, 0.25, True)
+ ;TX = smth9_Wrap(TX, 0.50, 0.25, True)
+
+ ;TY = smth9_Wrap(TY, 0.50, 0.25, True)
+ ;TY = smth9_Wrap(TY, 0.50, 0.25, True)
 
  ;print("")
  ;printMinMax(TX,False)
@@ -29,8 +38,8 @@ undef("compute_grad_catalog")
 procedure compute_grad_catalog(fi:string, fo:string)
 begin
   f = addfile(fi,"r")
-  T = f->t(:, :, :)
-  P = f->p(:, :, :)
+  T = f->T(:, :, :)
+  P = f->P(:, :, :)
   Rho = P / (287.0*T)
 
   T@long_name = "T"                     ; short name for plot labeling clarity
@@ -45,69 +54,50 @@ begin
   imgname = "catelog_section"
   
 ;************************************************
- T = smth9_Wrap(T, 0.50, 0.25, True)
- T = smth9_Wrap(T, 0.50, 0.25, True)
  tlst = get_gradient(T)
  TX = tlst[0]
  TY = tlst[1]
  delete(tlst)
 
- TX = smth9_Wrap(TX, 0.50, 0.25, True)
- TY = smth9_Wrap(TY, 0.50, 0.25, True)
-
- TX = smth9_Wrap(TX, 0.50, 0.25, True)
- TY = smth9_Wrap(TY, 0.50, 0.25, True)
-
 ;************************************************
- Rho = smth9_Wrap(Rho, 0.50, 0.25, True)
- Rho = smth9_Wrap(Rho, 0.50, 0.25, True)
+ Rho = T*log(Rho)
  rlst = get_gradient(Rho)
  RX = rlst[0]
  RY = rlst[1]
  delete(rlst)
 
- RX = smth9_Wrap(RX, 0.50, 0.25, True)
- RY = smth9_Wrap(RY, 0.50, 0.25, True)
-
- RX = smth9_Wrap(RX, 0.50, 0.25, True)
- RY = smth9_Wrap(RY, 0.50, 0.25, True)
-
 ;************************************************
- P = smth9_Wrap(P, 0.50, 0.25, True)
- P = smth9_Wrap(P, 0.50, 0.25, True)
  plst = get_gradient(P)
  PX = plst[0]
  PY = plst[1]
  delete(plst)
 
- PX = smth9_Wrap(PX, 0.50, 0.25, True)
- PY = smth9_Wrap(PY, 0.50, 0.25, True)
+;************************************************
+;d2p = uv2dvF_Wrap(PX,PY)
 
- PX = smth9_Wrap(PX, 0.50, 0.25, True)
- PY = smth9_Wrap(PY, 0.50, 0.25, True)
-
- d2p = uv2dvF_Wrap(PX,PY)
-
- d2p = smth9_Wrap(d2p, 0.50, 0.25, True)
- d2p = smth9_Wrap(d2p, 0.50, 0.25, True)
+;d2p = smth9_Wrap(d2p, 0.50, 0.25, True)
+;d2p = smth9_Wrap(d2p, 0.50, 0.25, True)
 
 ;************************************************
-;rlst = get_gradient(PX)
-;PXX = rlst[0]
-;PXY = rlst[1]
-;delete(rlst)
+ rlst = get_gradient(PX)
+ PXX = rlst[0]
+ PXY = rlst[1]
+ delete(rlst)
 
 ;************************************************
-;rlst = get_gradient(PY)
-;PXY = rlst[0]
-;PYY = rlst[1]
-;delete(rlst)
+ rlst = get_gradient(PY)
+ PYX = rlst[0]
+ PYY = rlst[1]
+ delete(rlst)
 
-;d2p = PXX + PYY
+ d2p = PXX + PXY + PYX + PYY
 
 ;----------------------------------------------------------------------
  dtdr = TX*RX + TY*RY
- dtdp = TX*PX + TY*PY
+ dpdr = PX*RX + PY*RY
+ dpdt = PX*TX + PY*TY
+;dtsq = TX*TX + TY*TY
+;drsq = RX*RX + RY*RY
 
  dimT = dimsizes(T)
  nalt = dimT(0)
@@ -136,9 +126,9 @@ begin
  cate = where(opt .gt. 0, 2, cate)
 
 ;----------------------------------------------------------------------
-;Cate 3:  dtdr < 0, dtdp >= 0, d2p <= 0
+;Cate 3:  dtdr < 0, dpdt >= 0, d2p <= 0
  opt1 = where(dtdr .lt. 0.0, 1, 0)
- opt2 = where(dtdp .ge. 0.0, 1, 0)
+ opt2 = where(dpdt .ge. 0.0, 1, 0)
  opt3 = where(d2p .le. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 3, cate)
@@ -150,8 +140,8 @@ begin
  cate = where(opt .gt. 0, 4, cate)
 
 ;----------------------------------------------------------------------
-;Cate 5:  dtdr < 0, dtdp < 0, d2p <= 0
- opt2 = where(dtdp .lt. 0.0, 1, 0)
+;Cate 5:  dtdr < 0, dpdt < 0, d2p <= 0
+ opt2 = where(dpdr .ge. 0.0, 1, 0)
  opt3 = where(d2p .le. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 5, cate)
@@ -161,16 +151,49 @@ begin
  opt3 = where(d2p .gt. 0.0, 1, 0)
  opt = opt1*opt2*opt3
  cate = where(opt .gt. 0, 6, cate)
+
 ;----------------------------------------------------------------------
  pvar = tofloat(cate)
-;pvar = smth9_Wrap(pvar, 0.50, -0.25, True)
-;pvar = smth9_Wrap(pvar, 0.50, 0.25, True)
-;cate = toint(pvar + 0.5)
-;pvar = tofloat(cate)
-
  pvar@long_name = "Catelog"
 
  write2file(T, P, pvar, fo)
+
+ dirname = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2021/"
+ foname = "D2P.nc"
+ fo = dirname + foname
+ write2file(T, P, d2p, fo)
+
+ foname = "TX.nc"
+ fo = dirname + foname
+ write2file(T, P, TX, fo)
+
+ foname = "TY.nc"
+ fo = dirname + foname
+ write2file(T, P, TY, fo)
+
+ foname = "PX.nc"
+ fo = dirname + foname
+ write2file(T, P, PX, fo)
+
+ foname = "PY.nc"
+ fo = dirname + foname
+ write2file(T, P, PY, fo)
+
+ foname = "RX.nc"
+ fo = dirname + foname
+ write2file(T, P, RX, fo)
+
+ foname = "RY.nc"
+ fo = dirname + foname
+ write2file(T, P, RY, fo)
+
+ foname = "PXY.nc"
+ fo = dirname + foname
+ write2file(T, P, PXY, fo)
+
+ foname = "PYX.nc"
+ fo = dirname + foname
+ write2file(T, P, PYX, fo)
 end
 
 ;************************************************

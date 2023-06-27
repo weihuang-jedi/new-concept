@@ -187,10 +187,10 @@ if __name__== '__main__':
     lon = int(i/2) - 180
     cscate = cate[:,:,i]
     if(lon < 0):
-      tname = 'gfs Atmospheric Catalog %s at Lon %dW' %(title, -lon)
+      tname = 'GFS Atmospheric Catalog %s at Lon %dW' %(title, -lon)
       iname = 'gfs_%s_at_lon_%dW.png' %(imagename, -lon)
     else:
-      tname = 'gfs Atmospheric Catalog %s at Lon %dW' %(title, lon)
+      tname = 'GFS Atmospheric Catalog %s at Lon %dW' %(title, lon)
       iname = 'gfs_%s_at_lon_%dW.png' %(imagename, lon)
     print('tname = ', tname)
     print('iname = ', iname)
@@ -200,7 +200,7 @@ if __name__== '__main__':
     csp.plot(lats, alts[0:400], cscate[0:400, :], ymax=20000)
 
   cscate = np.average(cate, axis=2)
-  tname = 'gfs Zonal Mean Atmospheric Catalog %s' %(title)
+  tname = 'GFS Zonal Mean Atmospheric Catalog %s' %(title)
   iname = 'gfs_zonal_mean_%s.png' %(imagename)
   print('tname = ', tname)
   print('iname = ', iname)

@@ -15,11 +15,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 #---------------------------------------------------------
 def plotit(x, y, z, title):
-  levels = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
-  colors = ('magenta', 'navy', 'orange', 'cyan', 'red', 'blue', 'brown')
-
   X, Y = np.meshgrid(x, y)
-  Z = z + 0.5
 
   print('Plotting ', title)
    
@@ -27,18 +23,20 @@ def plotit(x, y, z, title):
   ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
   proj = ccrs.PlateCarree()
 
-  cs = plt.contourf(X, Y, z, cmap ="jet")
- #cs = ax.contourf(X, Y, Z, levels, colors=colors,
- #                 transform=proj)
- #cs.cmap.set_under('magenta')
- #cs.cmap.set_over('blue')
+  cmap = 'jet'
+  
+ #z = 1000.0*z
+  z = 10.0e6*z
+  levels = np.linspace(-1.0, 1.0, 21)
+ #levels = np.linspace(-0.5, 0.5, 21)
+ #levels = np.linspace(-0.25, 0.25, 21)
+  cs = ax.contourf(X, Y, z, levels,
+                   transform=proj, cmap=cmap)
+ #cs = plt.contourf(X, Y, z, cmap ="jet")
 
  #cbar = plt.colorbar(cs, orientation='horizontal', shrink=0.85)
   cbar = plt.colorbar(cs, ax=ax, orientation='horizontal',
                       pad=.1, fraction=0.06, extend='neither')
-  cblabel =    '1. Thermal High           2. Thermal Low           3. Warm High             '
-  cblabel = '%s 4. Cold Low               5. Warm Low              6. Cold High        ' %(cblabel)
-  cbar.set_label(label=cblabel, weight='bold')
 
   ax.set_extent([-180, 180, -90, 90], crs=proj)
   ax.coastlines(resolution='auto', color='k')
@@ -59,7 +57,7 @@ class PlotVariable():
     self.dimlist = ('time', 'level', 'latitude', 'longitude')
 
  #-----------------------------------------------------------------------------------------
-  def process(self, infile=None):
+  def process(self, infile=None, varname='Laplas'):
     if(os.path.exists(infile)):
       print('Processing %s' %(infile))
       ncf = nc4.Dataset(infile, 'r')
@@ -86,23 +84,21 @@ class PlotVariable():
 
     self.newdims = ('time', 'alt', 'lat', 'lon')
 
-    varname = 'cate'
-    zv = ncf.variables[varname]
+    zv = ncf.variables['cate']
     print('zv column:', zv[:,0,0])
 
-    for k in range(4):
+   #for k in range(4):
    #for k in range(0, self.nalt, 40):
-   #for k in range(2, self.nalt, 40):
+   #for k in range(2, self.nalt, 4):
+    for k in range(2, 100, 4):
       var = zv[k,:,:]
  
      #--------------------------------------------------------------------------------
-      z1d = var.flatten()
-      for x in [0, 1, 2, 3, 4, 5, 6]:
-        print(f"{x} has occurred {op.countOf(z1d, x)} times")
+     #z1d = var.flatten()
+     #for x in [0, 1, 2, 3, 4, 5, 6]:
+     #  print(f"{x} has occurred {op.countOf(z1d, x)} times")
 
-     #title = '%s at hight level: %f' %(varname, self.alt[k])
-     #title = 'gfs Atmospheric System Catalog at 20220116_00Z %d meter' %(int(self.alt[k]+0.5))
-      title = 'gfs Atmospheric System Catalog of DEC 2021 %d meter' %(int(self.alt[k]+0.5))
+      title = 'gfs %s of DEC 2021 %d meter' %(varname, int(self.alt[k]+0.5))
       plotit(self.lon, self.lat, var, title)
 
     ncf.close()
@@ -112,16 +108,9 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
-  infile = 'grad_cate_202112.nc'
- #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/jan2022'
- #infile = 'grad_cate_20220116_00.nc'
- #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2022'
- #infile = 'delt2p_20221201_00.nc'
- #datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/annual'
-  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2022'
- #infile = 'PY.nc'
-  infile = 'D2P.nc'
- #infile = 'PYX.nc'
+ #varname = 'PY'
+  varname = 'D2P'
+  infile = '%s.nc' %(varname)
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])
@@ -138,5 +127,5 @@ if __name__== '__main__':
  #-----------------------------------------------------------------------------------------
   pv = PlotVariable(debug=debug)
   infile = '%s/%s' %(datadir, infile)
-  pv.process(infile=infile)
+  pv.process(infile=infile, varname=varname)
 

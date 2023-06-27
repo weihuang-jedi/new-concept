@@ -16,8 +16,8 @@
  printVarSummary(iduvr)
  printMinMax(iduvr,0)
 
- plottype = "x11"
-;plottype = "png"
+;plottype = "x11"
+ plottype = "png"
  imgname = "viddf"
 
  plot_div_density_flux(iduvr, plottype, imgname)
