@@ -1,7 +1,7 @@
 load "categorical.ncl"
 
 ;----------------------------------------------------------------------
- info = readinfo("datainfo_06Z.txt")
+ info = readinfo("datainfo_18.txt")
 
  plottype = info(0)
  dirname = info(1)

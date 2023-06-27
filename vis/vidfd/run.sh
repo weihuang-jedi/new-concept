@@ -5,9 +5,9 @@
 #SBATCH --ntasks-per-node=40
 #SBATCH -p bigmem
 ##SBATCH -p orion
-#SBATCH -J dmfc
-#SBATCH -e dmfc.%J.err
-#SBATCH -o dmfc.%J.out
+#SBATCH -J gfsdfd
+#SBATCH -e gfsdfd.%J.err
+#SBATCH -o gfsdfd.%J.out
 
  module load slurm ncl
 
@@ -17,7 +17,7 @@
 
 #rm -f *.png
 
- for hour in 00Z 06Z 12Z 18Z
+ for hour in 00 06 12 18
  do
 cat > datainfo_${hour}.txt << EOF
 png
