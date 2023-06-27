@@ -62,7 +62,7 @@ end
 
  malt = dims(0)
 
- alta = 0.5*(alt(0:malt-1) + at(1:malt))
+ alta = 0.5*(alt(0:malt-1) + malt(1:malt))
  ua(0:malt-1,:,:) = 0.5*(u(0:malt-1,:,:) + u(1:malt,:,:))
  va(0:malt-1,:,:) = 0.5*(v(0:malt-1,:,:) + v(1:malt,:,:))
  ra(0:malt-1,:,:) = 0.5*(rho(0:malt-1,:,:) + rho(1:malt,:,:))

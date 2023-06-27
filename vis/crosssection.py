@@ -143,11 +143,11 @@ if __name__== '__main__':
  #datadir = '/work2/noaa/gsienkf/weihuang/era5/daily-data/'
  #datafile = '%s/grad_cate_2022121500.nc' %(datadir)
 
- #title = 'Zonal Averaged Annual Atmospheric Catalog'
- #imagename = 'zonal_averaged_annual.png'
+ #title = 'ERA5 Zonal Averaged Annual Atmospheric Catalog'
+ #imagename = 'era5_zonal_averaged_annual.png'
 
-  title = 'Zonal Averaged Annual Atmospheric Catalog 202112'
-  imagename = 'zonal_averaged_202112.png'
+  title = 'ERA5 Zonal Averaged Annual Atmospheric Catalog 202112'
+  imagename = 'era5_zonal_averaged_202112.png'
 
  #title = 'Zonal Averaged Annual Atmospheric Catalog 2022121500'
  #imagename = 'zonal_averaged_2022121500.png'
