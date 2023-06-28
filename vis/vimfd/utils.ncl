@@ -1,3 +1,4 @@
+;----------------------------------------------------------------------
 undef("readinfo")
 function readinfo(filename:string)
 begin
@@ -13,79 +14,8 @@ begin
 end
 
 ;----------------------------------------------------------------------
-undef("get_half_lat_3d_var")
-function get_half_lat_3d_var(name:string, it:integer, f:file)
-begin
-  fv = short2flt(f->$name$(it,:,:,:))
-
- ;lev = fv&level
- ;lat = fv&latitude
- ;lon = fv&longitude
-
- ;dims = dimsizes(fv)
- ;nlev = dims(0)
- ;nlat = dims(1)
- ;nlon = dims(2)
-
- ;hv = 0.5*(fv(:,nlat-2:0:-1,:) + fv(:,nlat-1:1:-1,:))
- ;hlat = 0.5*(lat(nlat-2:0:-1) + lat(nlat-1:1:-1))
-
- ;hv@_FillValue = fv@_FillValue
- ;hv@missing_value = fv@missing_value
- ;hv@units = fv@units
- ;hv@long_name = fv@long_name
- ;hv@standard_name = fv@standard_name
-
- ;hv!0 = "level"
- ;hv!1 = "latitude"
- ;hv!2 = "longitude"
-
- ;hv&level = lev
- ;hv&latitude = hlat
- ;hv&longitude = lon
-
-  hv = fv(:,::-1,:)
-
-  return hv
-end
-
-;----------------------------------------------------------------------
-undef("convert2halflatgrid")
-function convert2halflatgrid(fv:float)
-begin
- ;lat = fv&latitude
- ;lon = fv&longitude
-
- ;dims = dimsizes(fv)
- ;nlat = dims(0)
- ;nlon = dims(1)
-
- ;hv = 0.5*(fv(nlat-2:0:-1,:) + fv(nlat-1:1:-1,:))
- ;hlat = 0.5*(lat(nlat-2:0:-1) + lat(nlat-1:1:-1))
-
- ;printVarSummary(fv)
- ;printVarSummary(hv)
-
- ;hv@_FillValue = fv@_FillValue
- ;hv@missing_value = fv@missing_value
- ;hv@units = fv@units
- ;hv@long_name = fv@long_name
-
- ;hv!0 = "latitude"
- ;hv!1 = "longitude"
-
- ;hv@latitude = hlat
- ;hv@longitude = lon
-
- ;return hv
-  
-  fv = fv(:,::-1,:)
-  return fv
-end
-
-;----------------------------------------------------------------------
-undef("write_vidfd")
-procedure write_vidfd(vidfd:float, flnm:string)
+undef("write_mfc")
+procedure write_mfc(vimfc:float, flnm:string)
 begin
   system("/bin/rm -f " + flnm)   ; remove any pre-existing file
   ncdf = addfile(flnm, "c")  ; open output netCDF file
@@ -94,8 +24,8 @@ begin
  ; create global attributes of the file (optional)
  ;===================================================================
   fAtt               = True            ; assign file attributes
-  fAtt@title         = "NCL calculated Density Flux Divergence"
-  fAtt@source_file   = "Calculated from NCL script: dfd-div"
+  fAtt@title         = "NCL calculated Moisture Flux Divergence"
+  fAtt@source_file   = "Calculated from NCL script: cal-mfc-div"
   fAtt@Conventions   = "None"
   fAtt@creation_date = systemfunc ("date")
   fileattdef( ncdf, fAtt )            ; copy file attributes
@@ -104,117 +34,94 @@ begin
  ; output variables directly; NCL will call appropriate functions
  ; to write the meta data associated with each variable
  ;===================================================================
-  ncdf->vidfd = vidfd
+  ncdf->vimfc = vimfc
 
   delete(ncdf)
 end
 
 ;----------------------------------------------------------------------
-undef("get_res")
-function get_res(tstr:string)
+undef("write_dfc")
+function cal_mfc(u:float, v:float, q:float, ps:float)
 begin
-  title = "ERA5 VIDFD " + tstr
+  g = 9.80665          ; m/s2
 
-  res                   = True             ; plot mods desired
-  res@gsnDraw           = True
-  res@gsnFrame          = True
-  res@lbLabelBarOn      = True        
+ ;Vertical levels
+  plev = q&level                   ; [100000,...,30000] Pa [kg/(m-s2)]
+  plev@units = "Pa"
 
-  res@cnFillOn          = True             ; turn on color
-  res@cnLinesOn         = False            ; turn off contour lines
-  res@cnLineLabelsOn    = False            ; turn off contour lines
-  res@cnFillPalette     = "ViBlGrWhYeOrRe" ; set White-in-Middle color map
-  res@lbLabelBarOn      = True             ; turn off individual cb's
-  res@mpFillOn          = False            ; turn off map fill
-                                           ; Use a common scale
-  res@cnLevelSelectionMode = "ManualLevels"; manual set levels so lb consistent
-  res@cnMaxLevelValF       = 10.0                  ; min level
-  res@cnMinLevelValF       = -res@cnMaxLevelValF  ; min level
-  res@cnLevelSpacingF      =  1.0                  ; contour interval
+  ptop = plev(1)
+  ptop@units = "Pa"
 
-  res@tiMainString         = title
+ ;Change [kg/kg] to [g/kg]; not necessary: but common units for q
 
-  return res
-end
+  q    = q*1000            
+  q@units = "g/kg"
 
-;----------------------------------------------------------------------
-undef("get_default_res")
-function get_default_res(title:string)
-begin
-  res                   = True             ; plot mods desired
-  res@gsnDraw           = True
-  res@gsnFrame          = True
-  res@lbLabelBarOn      = True
+ ;Layer thickness: ; Pa=>[kg/(m-s2)], (level,lat,lon) 
+ ;Mass weighting: (dp/g) => [Pa/(m/s2)] => (Pa-s2)/m => [kg/(m-s2)][s2/m] =>  (kg/m2)
+ ;Reference: http://www.cgd.ucar.edu/cas/catalog/newbudgets/
 
-  res@cnFillOn          = True             ; turn on color
-  res@cnLinesOn         = False            ; turn off contour lines
-  res@cnLineLabelsOn    = False            ; turn off contour lines
-  res@cnFillPalette     = "ViBlGrWhYeOrRe" ; set White-in-Middle color map
-  res@lbLabelBarOn      = True             ; turn off individual cb's
-  res@mpFillOn          = False            ; turn off map fill
-                                           ; Use a common scale
-  res@cnLevelSelectionMode = "AutomaticLevels"
+  dp = dpres_plevel_Wrap(plev, ps, ptop, 0) ; Pa; layar thickness 
 
-  res@tiMainString         = title
+  dimdp = dimsizes(dp)
 
-  return res
-end
+ ;print(dimdp)
 
-;----------------------------------------------------------------------
-undef("plot_vidfc")
-procedure plot_vidfc(VIDFD:float, plottype:string, tstr:string)
-begin
-  ntstr = str_sub_str(tstr, " ", "_")
-  ntstr = str_sub_str(ntstr, " ", "_")
-  imgname = "vidfd_" + ntstr
-  wks = gsn_open_wks(plottype, imgname)
-  res = get_res(tstr)
+  dpg  = dp/g    
+  dpg@long_name = "Layer Mass Weighting"
+  dpg@units     = "kg/m2"                     ; dp/g, Pa/(m s-2), reduce to kg m-2
 
- ;--------------------------------------------------------------------------------------
- ;Integrated Divergence of Density Flux Convergence [no scaling]
- ;print("-----")
- ;print("VIDFD")
- ;printVarSummary(VIDFD)
-  printMinMax(VIDFD, 0)
+ ;Moisture flux components at each pressure level
 
-  VIDFD = 1000.0*VIDFD
-  VIDFD@units = "g/(m2-s)"
+  uq = u*q
+  uq@long_name = "Zonal Moisture Flux [uq]"
+  uq@units = "["+u@units+"]["+q@units+"]"     ; [m/s][g/kg]     
+  copy_VarCoords(u,uq)                        ; (level,lat,lon)
 
- ;--------------------------------------------------------------------------------------
-  pvar := VIDFD(::4,::4)
-  plt = gsn_csm_contour_map(wks,pvar,res)
+  vq = v*q
+  vq@long_name = "Meridional Moisture Flux [vq]"
+  vq@units = "["+v@units+"]["+q@units+"]" 
+  copy_VarCoords(v,vq)                        ; (level,lat,lon)
 
- ;--------------------------------------------------------------------------------------
-  pvar := VIDFD(::2,::2)
-  plt = gsn_csm_contour_map(wks,pvar,res)
+ ;Integrated mass weighted moisture flux components
 
- ;--------------------------------------------------------------------------------------
-  pvar := VIDFD
-  plt = gsn_csm_contour_map(wks,pvar,res)
-end
+  uq_dpg = uq*dpg                ; mass weighted 'uq'; [m/s][g/kg][kg/m2]=>[m/s][g/kg]
+  iuq    = dim_sum_n(uq_dpg, 0)
+  iuq@long_name = "Integrated Zonal UQ [uq*dpg]" 
+  iuq@LONG_NAME = "Sum: Mass Weighted Integrated Zonal Moisture Flux [uq*dpg]" 
+  iuq@units     = "[m/s][g/kg]"
+  copy_VarCoords(u(0,:,:), iuq); (lat,lon)
+  delete(uq_dpg)
 
-;----------------------------------------------------------------------
-undef("plotit")
-procedure plotit(var:float, name:string, plottype:string, imgname:string)
-begin
-  wks = gsn_open_wks(plottype, imgname)
-  res = get_default_res(name)
+  vq_dpg = vq*dpg                ; mass weighted 'vq'; [m/s][g/kg][kg/m2]=>[m/s][g/kg] 
+  ivq    = dim_sum_n(vq_dpg, 0)
+  ivq@long_name = "Integrated Meridional VQ [vq*dpg]" 
+  ivq@LONG_NAME = "Sum: Mass Weighted Integrated Meridional Moisture Flux [vq*dpg]" 
+  ivq@units     = "[m/s][g/kg]"
+  copy_VarCoords(v(0,:,:), ivq); (lat,lon)
+  delete(vq_dpg)
 
- ;--------------------------------------------------------------------------------------
- ;Integrated Divergence of Density Flux Convergence [no scaling]
-  printMinMax(var, 0)
+ ;Divergence of moisture flux: uv2dvF => global 'fixed' rectilinear grid
 
- ;--------------------------------------------------------------------------------------
-  pvar := var(::4,::4)
-  plt = gsn_csm_contour_map(wks,pvar,res)
+  duvq  = uv2dvF_Wrap(uq, vq)    ; (level,lat,lon)
+  duvq@long_name = "Divergence of Moisture Flux"
+  duvq@units     = "g/(kg-s)"    ; (1/m)*[(m/s)(g/kg)] => [g/(kg-s)]
+ 
+ ;Mass weighted integration [sum] of the divergence of moisture flux
 
- ;--------------------------------------------------------------------------------------
-  pvar := var(::2,::2)
-  plt = gsn_csm_contour_map(wks,pvar,res)
+  duvq_dpg = duvq*dpg            ;  [g/(kg-s)][kg/m2] => [g/(m2-s)]
+  iduvq    = dim_sum_n(duvq_dpg, 0)
+  iduvq@long_name = "Integrated Mass Wgt MFC" 
+  iduvq@LONG_NAME = "Integrated Mass Weighted Moisture Flux Convergence" 
+  iduvq@units     = "g/(m2-s)"
+  delete(duvq_dpg)
 
- ;--------------------------------------------------------------------------------------
-  pvar := var
-  plt = gsn_csm_contour_map(wks,pvar,res)
+  VIMFC =  iduvq           ; keep meta data                         
+  VIMFC = -VIMFC           ; Note the preceding -1 [negative precedes integration] 
+  copy_VarCoords(u(0,:,:), VIMFC)      ; (lat,lon)
+  VIMFC@long_name = "VIMFC"
+
+  return VIMFC
 end
 
 ;----------------------------------------------------------------------
@@ -518,47 +425,16 @@ begin
  ;Integrated Divergence of Density Flux Convergence [no scaling]
   printMinMax(var, 0)
 
-  plt = gsn_csm_contour_map(wks,var,res)
-end
-
-;----------------------------------------------------------------------
-undef("get_res4precipitation")
-function get_res4precipitation(title:string)
-begin
-  res                   = True             ; plot mods desired
-  res@gsnDraw           = True
-  res@gsnFrame          = True
-  res@lbLabelBarOn      = True
-
-  res@cnFillOn          = True             ; turn on color
-  res@cnLinesOn         = False            ; turn off contour lines
-  res@cnLineLabelsOn    = False            ; turn off contour lines
-  res@cnFillPalette     = "ViBlGrWhYeOrRe" ; set White-in-Middle color map
-  res@lbLabelBarOn      = True             ; turn off individual cb's
-  res@mpFillOn          = False            ; turn off map fill
-                                           ; Use a common scale
- ;res@lbOrientation        = "Vertical"     ; vertical label bar
-  res@cnLevelSelectionMode = "ExplicitLevels"
-  res@cnLevels             = (/0.01, 0.02, 0.05, 0.1, \
-                               0.2, 0.5, 1.0, 2.0, 5.0/)
-  res@cnFillColors         = (/"white", "cyan", "green", "springgreen", "yellow", \
-                               "orange", "orangered", "red", "magenta", "pink"/)
-  res@tiMainString         = title
-
-  return res
-end
-
-;----------------------------------------------------------------------
-undef("plot_precipitation")
-procedure plot_precipitation(var:float, name:string, plottype:string, imgname:string)
-begin
-  wks = gsn_open_wks(plottype, imgname)
-  res = get_res4precipitation(name)
+ ;--------------------------------------------------------------------------------------
+  pvar := var(::4,::4)
+  plt = gsn_csm_contour_map(wks,pvar,res)
 
  ;--------------------------------------------------------------------------------------
- ;Integrated Divergence of Density Flux Convergence [no scaling]
-  printMinMax(var, 0)
+  pvar := var(::2,::2)
+  plt = gsn_csm_contour_map(wks,pvar,res)
 
-  plt = gsn_csm_contour_map(wks,var,res)
+ ;--------------------------------------------------------------------------------------
+  pvar := var
+  plt = gsn_csm_contour_map(wks,pvar,res)
 end
 

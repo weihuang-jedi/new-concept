@@ -38,5 +38,5 @@ load "utils.ncl"
  tn = "monthly mean " + pvarname + " " + phour + " " + pmonth + " " + pyear
  imgname = "monthly_mean_" + pvarname + "_" + phour + "_" + pmonth + "_" + pyear
  var = 1000.0*var
- plot_evaporation(var, tn, "x11", imgname)
+ plot_evaporation(var, tn, plottype, imgname)
 
