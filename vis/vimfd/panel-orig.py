@@ -19,7 +19,7 @@ columns = 1
 hlist = ['00Z', '06Z', '12Z', '18Z']
 namelist = []
 for n in range(len(hlist)):
-  iname = 'images/trim_monthly_mean_gfs_vidfd_%s_dec_2021.png' %(hlist[n])
+  iname = 'images/trim_monthly_mean_gfs_vimfd_%s_dec_2021.png' %(hlist[n])
   print('iname: ', iname)
   namelist.append(iname)
 

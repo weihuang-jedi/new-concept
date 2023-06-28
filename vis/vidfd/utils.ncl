@@ -473,3 +473,84 @@ begin
   delete(ncdf)
 end
 
+;----------------------------------------------------------------------
+undef("get_res4precipitation")
+function get_res4precipitation(title:string)
+begin
+  res                   = True             ; plot mods desired
+  res@gsnDraw           = True
+  res@gsnFrame          = True
+  res@lbLabelBarOn      = True
+
+  res@cnFillOn          = True             ; turn on color
+  res@cnLinesOn         = False            ; turn off contour lines
+  res@cnLineLabelsOn    = False            ; turn off contour lines
+  res@cnFillPalette     = "ViBlGrWhYeOrRe" ; set White-in-Middle color map
+  res@lbLabelBarOn      = True             ; turn off individual cb's
+  res@mpFillOn          = False            ; turn off map fill
+                                           ; Use a common scale
+ ;res@lbOrientation        = "Vertical"     ; vertical label bar
+  res@cnLevelSelectionMode = "ExplicitLevels"
+  res@cnLevels             = (/0.01, 0.02, 0.05, 0.1, \
+                               0.2, 0.5, 1.0, 2.0, 5.0/)
+  res@cnFillColors         = (/"white", "cyan", "green", "springgreen", "yellow", \
+                               "orange", "orangered", "red", "magenta", "pink"/)
+  res@tiMainString         = title
+
+  return res
+end
+
+;----------------------------------------------------------------------
+undef("plot_precipitation")
+procedure plot_precipitation(var:float, name:string, plottype:string, imgname:string)
+begin
+  wks = gsn_open_wks(plottype, imgname)
+  res = get_res4precipitation(name)
+
+ ;--------------------------------------------------------------------------------------
+ ;Integrated Divergence of Density Flux Convergence [no scaling]
+  printMinMax(var, 0)
+
+  plt = gsn_csm_contour_map(wks,var,res)
+end
+
+;----------------------------------------------------------------------
+undef("get_res4pw")
+function get_res4pw(title:string)
+begin
+  res                   = True             ; plot mods desired
+  res@gsnDraw           = True
+  res@gsnFrame          = True
+  res@lbLabelBarOn      = True
+
+  res@cnFillOn          = True             ; turn on color
+  res@cnLinesOn         = False            ; turn off contour lines
+  res@cnLineLabelsOn    = False            ; turn off contour lines
+  res@cnFillPalette     = "ViBlGrWhYeOrRe" ; set White-in-Middle color map
+  res@lbLabelBarOn      = True             ; turn off individual cb's
+  res@mpFillOn          = False            ; turn off map fill
+                                           ; Use a common scale
+ ;res@lbOrientation        = "Vertical"     ; vertical label bar
+  res@cnLevelSelectionMode = "ExplicitLevels"
+  res@cnLevels             = (/1.0, 2.0, 4.0, 8.0, \
+                               10.0, 20.0, 40.0, 50.0, 60.0/)
+  res@cnFillColors         = (/"white", "cyan", "green", "springgreen", "yellow", \
+                               "orange", "orangered", "red", "magenta", "pink"/)
+  res@tiMainString         = title
+
+  return res
+end
+
+;----------------------------------------------------------------------
+undef("plot_pw")
+procedure plot_pw(var:float, name:string, plottype:string, imgname:string)
+begin
+  wks = gsn_open_wks(plottype, imgname)
+  res = get_res4pw(name)
+
+ ;--------------------------------------------------------------------------------------
+  printMinMax(var, 0)
+
+  plt = gsn_csm_contour_map(wks,var,res)
+end
+

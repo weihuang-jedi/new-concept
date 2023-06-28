@@ -28,10 +28,12 @@ def plotit(x, y, z, title, imgname):
  #clevs = np.arange(-100.0, 102.0, 2.0)
  #cblevs = np.arange(-100.0, 110.0, 10.0)
 
-  clevs = np.arange(-10.0, 11.0, 1.0)
-  cblevs = np.arange(-10.0, 15.0, 5.0)
+ #clevs = np.arange(-10.0, 11.0, 1.0)
+ #cblevs = np.arange(-10.0, 15.0, 5.0)
 
- #cs = plt.contourf(X, Y, z, cmap ="jet")
+  clevs = np.arange(-0.2, 0.21, 0.01)
+  cblevs = np.arange(-0.2, 0.25, 0.05)
+
   cs = ax.contourf(X, Y, z, levels=clevs, extend='both',
                    transform=proj,
                    cmap=cmapname)
@@ -70,11 +72,11 @@ class PlotVariable():
       print('file: %s does not exist. Stop' %(flnm))
       sys.exit(-1)
 
-    self.lat = ncf.variables['latitude'][:]
-    self.lon = ncf.variables['longitude'][:]
+    self.lat = ncf.variables['lat_0'][:]
+    self.lon = ncf.variables['lon_0'][:]
 
-    bvar = ncb.variables['vidfd'][:,:]
-    cvar = ncf.variables['vidfd'][:,:]
+    bvar = ncb.variables['vimfc'][:,:]
+    cvar = ncf.variables['vimfc'][:,:]
     diff = cvar - bvar
     title = imgname.replace(' ', '_')
     plotit(self.lon, self.lat, diff, title, imgname)
@@ -86,7 +88,7 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/vis/vidfd/data'
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
  #base = 'monthly_mean_ERA5_VIDFD_00Z_Dec_2021.nc'
  #base = 'monthly_mean_ERA5_VIDFD_06Z_Dec_2021.nc'
  #base = 'monthly_mean_ERA5_VIDFD_12Z_Dec_2021.nc'

@@ -1,4 +1,4 @@
-load "categorical.ncl"
+load "utils.ncl"
 
 ;----------------------------------------------------------------------
  info = readinfo("DATAINFO")

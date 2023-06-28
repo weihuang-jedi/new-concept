@@ -11,7 +11,7 @@ import cartopy.crs as ccrs
 
 import tkinter
 import matplotlib
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 #---------------------------------------------------------
 def plotit(x, y, z, title, imgname):
   X, Y = np.meshgrid(x, y)
@@ -28,8 +28,8 @@ def plotit(x, y, z, title, imgname):
  #clevs = np.arange(-100.0, 102.0, 2.0)
  #cblevs = np.arange(-100.0, 110.0, 10.0)
 
-  clevs = np.arange(-20.0, 21.0, 1.0)
-  cblevs = np.arange(-20.0, 25.0, 5.0)
+  clevs = np.arange(-0.20, 0.21, 0.01)
+  cblevs = np.arange(-0.20, 0.25, 0.05)
 
  #cs = plt.contourf(X, Y, z, cmap ="jet")
   cs = ax.contourf(X, Y, z, levels=clevs, extend='both',
@@ -44,8 +44,8 @@ def plotit(x, y, z, title, imgname):
   ax.set_global()
 
   plt.title(title)
- #plt.savefig(imgname)
-  plt.show()
+  plt.savefig(imgname)
+ #plt.show()
 
 #=========================================================================
 class PlotVariable():
@@ -63,10 +63,10 @@ class PlotVariable():
       print('file: %s does not exist. Stop' %(flnm))
       sys.exit(-1)
 
-    self.lat = ncf.variables['latitude'][:]
-    self.lon = ncf.variables['longitude'][:]
+    self.lat = ncf.variables['lat_0'][:]
+    self.lon = ncf.variables['lon_0'][:]
 
-    pvar = ncf.variables['vimfd'][:,:]
+    pvar = ncf.variables['vimfc'][:,:]
     print('Min %f, max: %f' %(np.min(pvar), np.max(pvar)))
 
     title = imgname.replace(' ', '_')
@@ -78,8 +78,8 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/vis/vimfd/data'
-  flnm = 'monthly_mean_ERA5_VIMFD_18Z_Dec_2021.nc'
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
+  flnm = 'monthly_mean_gfs_vimfd_18Z_dec_2021.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'flnm='])
