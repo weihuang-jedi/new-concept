@@ -5,15 +5,15 @@
 #SBATCH --ntasks-per-node=40
 #SBATCH -p bigmem
 ##SBATCH -p orion
-#SBATCH -J gfsdfd
-#SBATCH -e gfsdfd.%J.err
-#SBATCH -o gfsdfd.%J.out
+#SBATCH -J gfsmfd
+#SBATCH -e gfsmfd.%J.err
+#SBATCH -o gfsmfd.%J.out
 
  module load slurm ncl
 
  time_start=$(date +%s)
 
- cd /work2/noaa/gsienkf/weihuang/gfs/vis/vidfd
+ cd /work2/noaa/gsienkf/weihuang/gfs/vis/vimfd
 
 #rm -f *.png
 
@@ -23,18 +23,18 @@ cat > datainfo_${hour}.txt << EOF
 png
 /work2/noaa/gsienkf/weihuang/gfs/data/dec2021/
 monthly_mean_gfs_4_202112_${hour}00_000.nc
-monthly_mean_gfs_vidfd_${hour}Z_dec_2021.nc
-monthly_mean_gfs_vidfd_${hour}Z_dec_2021
-monthly mean GFS VIDFD ${hour}Z Dec 2021
+monthly_mean_gfs_vimfd_${hour}Z_dec_2021.nc
+monthly_mean_gfs_vimfd_${hour}Z_dec_2021
+monthly mean GFS VIMFD ${hour}Z Dec 2021
 EOF
    sed -e "s/DATAINFO/datainfo_${hour}.txt/g" \
-       plot-vidfd.template > plot-vidfd-${hour}.ncl
-   ncl plot-vidfd-${hour}.ncl &
+       plot-vimfd.template > plot-vimfd-${hour}.ncl
+   ncl plot-vimfd-${hour}.ncl &
  done
 
  sed -e "s/DATAINFO/datainfo.txt/g" \
-     plot-vidfd.template > plot-vidfd.ncl
- ncl plot-vidfd.ncl &
+     plot-vimfd.template > plot-vimfd.ncl
+ ncl plot-vimfd.ncl &
 
  wait
 

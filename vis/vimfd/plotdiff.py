@@ -70,8 +70,8 @@ class PlotVariable():
       print('file: %s does not exist. Stop' %(flnm))
       sys.exit(-1)
 
-    self.lat = ncf.variables['lat_0'][:]
-    self.lon = ncf.variables['lon_0'][:]
+    self.lat = ncf.variables['latitude'][:]
+    self.lon = ncf.variables['longitude'][:]
 
     bvar = ncb.variables['vidfd'][:,:]
     cvar = ncf.variables['vidfd'][:,:]

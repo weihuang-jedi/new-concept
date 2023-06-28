@@ -11,7 +11,7 @@ import cartopy.crs as ccrs
 
 import tkinter
 import matplotlib
-#matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')
 #---------------------------------------------------------
 def plotit(x, y, z, title, imgname):
   X, Y = np.meshgrid(x, y)
@@ -44,8 +44,8 @@ def plotit(x, y, z, title, imgname):
   ax.set_global()
 
   plt.title(title)
-  plt.savefig(imgname)
- #plt.show()
+ #plt.savefig(imgname)
+  plt.show()
 
 #=========================================================================
 class PlotVariable():
@@ -55,7 +55,7 @@ class PlotVariable():
     print('debug: ', debug)
 
  #-----------------------------------------------------------------------------------------
-  def process(self, flnm=None, imgname='ERA5 VIDFD'):
+  def process(self, flnm=None, imgname='ERA5 VIMFD'):
     if(os.path.exists(flnm)):
       print('Processing %s' %(flnm))
       ncf = nc4.Dataset(flnm, 'r')
@@ -63,10 +63,12 @@ class PlotVariable():
       print('file: %s does not exist. Stop' %(flnm))
       sys.exit(-1)
 
-    self.lat = ncf.variables['lat_0'][:]
-    self.lon = ncf.variables['lon_0'][:]
+    self.lat = ncf.variables['latitude'][:]
+    self.lon = ncf.variables['longitude'][:]
 
-    pvar = ncf.variables['vidfd'][:,:]
+    pvar = ncf.variables['vimfd'][:,:]
+    print('Min %f, max: %f' %(np.min(pvar), np.max(pvar)))
+
     title = imgname.replace(' ', '_')
     plotit(self.lon, self.lat, pvar, title, imgname)
 
@@ -76,10 +78,8 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/vis/vidfd/data'
- #flnm = 'monthly_mean_ERA5_VIDFD_00Z_Dec_2021.nc'
- #flnm = 'monthly_mean_ERA5_VIDFD_06Z_Dec_2021.nc'
-  flnm = 'monthly_mean_ERA5_VIDFD_18Z_Dec_2021.nc'
+  datadir = '/work2/noaa/gsienkf/weihuang/era5/vis/vimfd/data'
+  flnm = 'monthly_mean_ERA5_VIMFD_18Z_Dec_2021.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'flnm='])

@@ -1,0 +1,6 @@
+*.err
+*.out
+*.ncl
+*.png
+data
+images
