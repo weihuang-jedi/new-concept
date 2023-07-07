@@ -14,12 +14,17 @@ fig = plt.figure(figsize=(10, 7))
 # setting values to rows and column variables
 rows = 4
 columns = 1
+
+#varname='MSL'
+#varname='Temperature'
+#varname='Specific_humidity'
+varname='U-component_of_wind'
   
 # reading images
-hlist = ['00Z', '06Z', '12Z', '18Z', '00Z']
+hlist = ['00', '06', '12', '18', '00']
 namelist = []
 for n in range(len(hlist)-1):
-  iname = 'trim_monthly_mean_gfs_vidfd_%s-%s_Dec_2021.png' %(hlist[n+1], hlist[n])
+  iname = 'images/trim_%sZ-%sZ_Monthly_Mean_%s.png' %(hlist[n+1], hlist[n], varname)
   print('iname: ', iname)
   namelist.append(iname)
 
@@ -38,7 +43,7 @@ for n in range(rows*columns):
   plt.axis('off')
  #plt.title(monthlist[n])
   
-imgname = 'panel_monthly_mean_GFS_VIDFD_6h_diff_Dec_2021.png'
+imgname = 'panel_Monthly_Mean_%s.png' %(varname)
 plt.tight_layout()
 plt.savefig(imgname)
 plt.show()

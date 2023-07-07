@@ -8,6 +8,8 @@ import tkinter
 import matplotlib
 matplotlib.use('TkAgg')
 
+varname = 'U-component_of_wind'
+
 # create figure
 fig = plt.figure(figsize=(10, 7))
   
@@ -19,7 +21,7 @@ columns = 1
 hlist = ['00Z', '06Z', '12Z', '18Z']
 namelist = []
 for n in range(len(hlist)):
-  iname = 'images/trim_monthly_mean_gfs_vidfd_%s_dec_2021.png' %(hlist[n])
+  iname = 'images/trim_%s_Monthly_Mean_%s.png' %(hlist[n], varname)
   print('iname: ', iname)
   namelist.append(iname)
 
@@ -38,7 +40,7 @@ for n in range(rows*columns):
   plt.axis('off')
  #plt.title(monthlist[n])
   
-imgname = 'panel_monthly_mean_GFS_VIDFD_Dec_2021.png'
+imgname = 'panel_Monthly_Mean_%s.png' %(varname)
 plt.tight_layout()
 plt.savefig(imgname)
 plt.show()
