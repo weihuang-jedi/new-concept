@@ -27,10 +27,20 @@ class GeneratePlot():
 
   def setup_default(self):
    #cmapname = coolwarm, bwr, rainbow, jet, seismic, nipy_spectral
+   #self.cmapname = 'brg'
     self.cmapname = 'jet'
 
-    self.clevs = np.arange(-10.0, 10.2, 0.2)
-    self.cblevs = np.arange(-10.0, 12.0, 2.0)
+    self.clevs = np.arange(-5.0, 5.2, 0.1)
+    self.cblevs = np.arange(-5.0, 6.0, 1.0)
+
+   #self.clevs = np.arange(-10.0, 10.2, 0.2)
+   #self.cblevs = np.arange(-10.0, 12.0, 2.0)
+
+   #self.clevs = np.arange(-20.0, 20.2, 0.2)
+   #self.cblevs = np.arange(-20.0, 22.0, 2.0)
+
+   #self.clevs = np.arange(-200.0, 202.0, 2.0)
+   #self.cblevs = np.arange(-200.0, 250.0, 50.0)
 
     self.orientation = 'horizontal'
     self.pad = 0.1
@@ -51,8 +61,7 @@ class GeneratePlot():
     plt.title(self.title)
     plt.savefig(self.imgname)
    #if sys.flags.interactive:
-    if(self.debug):
-      plt.show()
+    plt.show()
 
   def set_title(self, title):
     self.title = title
@@ -89,109 +98,120 @@ class GeneratePlot():
 
     self.showit()
 
+ #---------------------------------------------------------
+  def plot_cross_section(self, y, z, data, title, imgname):
+    self.fig = plt.figure(figsize=(10, 5))
+    self.ax = self.fig.add_subplot(1, 1, 1)
+
+    Y, Z = np.meshgrid(y, z)
+
+    print('Plotting ', title)
+   
+    cs = self.ax.contourf(Y, Z, data, levels=self.clevs, extend=self.extend,
+                          cmap=self.cmapname)
+    cbar = plt.colorbar(cs, ax=self.ax, orientation=self.orientation,
+                        ticks=self.cblevs,
+                        pad=self.pad, fraction=self.fraction)
+    plt.grid()
+
+    self.set_title(title)
+    self.set_imgname(imgname)
+
+    self.showit()
+
 #=========================================================================
 class PlotVariable():
   def __init__(self, debug=0):
     self.debug = debug
-    self.monthname = ['NonExist', 'jan', 'feb', 'mar', 'apr', 'may', 'jun',
-                      'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
     print('debug: ', debug)
+
+    self.monthname = ['NonExist', 'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+                      'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
     self.gp = GeneratePlot(debug)
 
  #-----------------------------------------------------------------------------------------
-  def get_mean(self, varname='PRMSL_P0_L101_GLL0', year=2021, month=12, ndim=2):
-    monyear = '%s%d' %(self.monthname[month], year)
+  def get_data(self, year=2021, month=12):
+    dirname = '%s/%s%d' %(self.datadir, self.monthname[month], year)
+    mon_year = '%s_%d' %(self.monthname[month], year)
     meanlist = []
+
+   #varname = 'div'
+    varname = 'dfd'
+
     for t in ['00', '06', '12', '18']:
-      fullname = '%s/%s/%s_%s00_000.nc' %(self.datadir, monyear, self.flnm, t)
+      fullname = '%s/monthly_mean_gfs_vidfd_%sZ_%s.nc' %(dirname, t, mon_year)
+      print('fullname:', fullname)
       ncf = nc4.Dataset(fullname, 'r')
       var = ncf.variables[varname]
-      self.longname = var.long_name
-      self._FillValue = var._FillValue
-      self.missing_value = var.missing_value
-      if(ndim == 2):
-        val = var[:,:]
-      else:
-        val = var[:,:,:]
+      val = var[:,:,:]
       meanlist.append(val)
-
       if('00' == t):
         meanval = val
+        self.longname = var.long_name
+        self._FillValue = var._FillValue
+       #self.missing_value = var.missing_value
+
         self.lat = ncf.variables['lat_0'][:]
         self.lon = ncf.variables['lon_0'][:]
-        self.ter = ncf.variables['HGT_P0_L1_GLL0'][:,:]
+        self.prs = ncf.variables['lv_ISBL0'][:]
       else:
         meanval += val
 
       ncf.close()
 
     meanval *= 0.25
-
     return meanval, meanlist
 
  #-----------------------------------------------------------------------------------------
-  def process(self, datadir=None, flnm=None):
+  def process(self, datadir=None):
     self.datadir = datadir
-    self.flnm = flnm
 
-   #meanval, varlist = self.get_mean(varname='PRMSL_P0_L101_GLL0', year=2021, month=12)
-   #meanval, varlist = self.get_mean(varname='TMP_P0_L1_GLL0', year=2021, month=12)
-   #meanval, varlist = self.get_mean(varname='TMP_P0_L100_GLL0', year=2021, month=12, ndim=3)
-    meanval, varlist = self.get_mean(varname='UGRD_P0_L100_GLL0', year=2021, month=12, ndim=3)
+    meanval, varlist = self.get_data(year=2021, month=12)
     longname = 'Monthly_Mean_%s' %(self.longname)
 
-    hourlist = ['00', '06', '12', '18']
+    z = []
+    ftop = np.log2(10.0)
+    for n in range(len(self.prs)):
+      fact = 20.0*(np.log2(100000.0/self.prs[n])/ftop)
+      print('Level %d prs = %f, z = %f' %(n, self.prs[n], fact))
+      z.append(fact)
 
-    for n in range(len(varlist)):
-      title = '%sZ %s' %(hourlist[n], longname)
-      imgname = title.replace(' ', '_')
-      pvar = varlist[n][-1,:,:]
-      print('%s diff at %sZ min: %f, max: %f' %(longname, hourlist[n], np.min(pvar), np.max(pvar)))
-      self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
+    nlon = int(len(self.lon)/2)
+    length = 10
+    val = meanval[:, :, nlon-length:nlon+length]
+   #val = meanval[:, :, :]
+    pvar = np.mean(val, axis=2)
+   #pvar = meanval[:, :, nlon]
 
-   #clevs = np.arange(-0.5, 0.51, 0.01)
-   #cblevs = np.arange(-0.5, 0.6, 0.1)
+   #print('pvar = ', pvar)
 
-    clevs = np.arange(-2.0, 2.1,  0.1)
-    cblevs = np.arange(-2.0, 3.0, 1.0)
-
-    self.gp.set_clevs(clevs)
-    self.gp.set_cblevs(cblevs)
-
-    for n in range(len(varlist)):
-      nm = n - 1
-      if(nm < 0):
-        nm = len(varlist) - 1
-      title = '%sZ-%sZ_%s' %(hourlist[n], hourlist[nm], longname)
-      imgname = title.replace(' ', '_')
-      pvar = varlist[n][-1,:,:] - varlist[nm][-1,:,:]
-      print('%s diff at %sZ min: %f, max: %f' %(longname, hourlist[n], np.min(pvar), np.max(pvar)))
-      self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
+    nz = 23
+    zp = z[nz:]
+    vp = pvar[nz:, :]
+    title = 'Density Flux Divergence GFS, Dec 2021'
+    imgname = title.replace(' ', '_')
+    print('%s min: %f, max: %f' %(longname, np.min(pvar), np.max(pvar)))
+    self.gp.plot_cross_section(self.lat, zp[::-1], vp[::-1,:], title, imgname)
 
 #--------------------------------------------------------------------------------
 if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data'
-  flnm = 'monthly_mean_gfs_4_202112'
 
  #-----------------------------------------------------------------------------------------
-  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'flnm='])
+  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir='])
   for o, a in opts:
     if o in ('--debug'):
       debug = int(a)
     elif o in ('--datadir'):
       datadir = a
-    elif o in ('--flnm'):
-      flnm = a
-    elif o in ('--imgname'):
-      imgname = a
     else:
       assert False, 'unhandled option'
 
  #-----------------------------------------------------------------------------------------
   pv = PlotVariable(debug=debug)
-  pv.process(datadir=datadir, flnm=flnm)
+  pv.process(datadir=datadir)
 

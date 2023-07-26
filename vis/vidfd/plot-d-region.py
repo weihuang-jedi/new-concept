@@ -101,46 +101,47 @@ class PlotVariable():
     self.gp = GeneratePlot(debug)
 
  #-----------------------------------------------------------------------------------------
-  def get_mean(self, varname='PRMSL_P0_L101_GLL0', year=2021, month=12, ndim=2):
-    monyear = '%s%d' %(self.monthname[month], year)
+  def get_data(self, year=2021, month=12):
+    dirname = '%s/%s%d' %(self.datadir, self.monthname[month], year)
+    mon_year = '%s_%d' %(self.monthname[month], year)
     meanlist = []
+
+    varname = 'div'
+    fullname = '%s/monthly_mean_gfs_DIV_%s.nc' %(dirname, mon_year)
+    ncf = nc4.Dataset(fullname, 'r')
+    var = ncf.variables[varname]
+    self.longname = var.long_name
+    self._FillValue = var._FillValue
+    self.missing_value = var.missing_value
+    meanval = var[:,:,:]
+
+    self.lat = ncf.variables['lat_0'][:]
+    self.lon = ncf.variables['lon_0'][:]
+    self.prs = ncf.variables['lv_ISBL0'][:]
+
+    ncf.close()
+
     for t in ['00', '06', '12', '18']:
-      fullname = '%s/%s/%s_%s00_000.nc' %(self.datadir, monyear, self.flnm, t)
+      fullname = '%s/monthly_mean_gfs_div_%sZ_%s.nc' %(dirname, t, mon_year)
       ncf = nc4.Dataset(fullname, 'r')
-      var = ncf.variables[varname]
-      self.longname = var.long_name
-      self._FillValue = var._FillValue
-      self.missing_value = var.missing_value
-      if(ndim == 2):
-        val = var[:,:]
-      else:
-        val = var[:,:,:]
+      val = ncf.variables[varname][:,:,:]
       meanlist.append(val)
-
-      if('00' == t):
-        meanval = val
-        self.lat = ncf.variables['lat_0'][:]
-        self.lon = ncf.variables['lon_0'][:]
-        self.ter = ncf.variables['HGT_P0_L1_GLL0'][:,:]
-      else:
-        meanval += val
-
       ncf.close()
-
-    meanval *= 0.25
 
     return meanval, meanlist
 
  #-----------------------------------------------------------------------------------------
-  def process(self, datadir=None, flnm=None):
+  def process(self, datadir=None):
     self.datadir = datadir
-    self.flnm = flnm
 
-   #meanval, varlist = self.get_mean(varname='PRMSL_P0_L101_GLL0', year=2021, month=12)
-   #meanval, varlist = self.get_mean(varname='TMP_P0_L1_GLL0', year=2021, month=12)
-   #meanval, varlist = self.get_mean(varname='TMP_P0_L100_GLL0', year=2021, month=12, ndim=3)
-    meanval, varlist = self.get_mean(varname='UGRD_P0_L100_GLL0', year=2021, month=12, ndim=3)
+    meanval, varlist = self.get_data(year=2021, month=12)
     longname = 'Monthly_Mean_%s' %(self.longname)
+
+    title = 'Monthly Mean Divergence'
+    imgname = title.replace(' ', '_')
+    pvar = meanval[-1,:,:]
+    print('meanval min: %f, max: %f' %(np.min(pvar), np.max(pvar)))
+    self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
 
     hourlist = ['00', '06', '12', '18']
 
@@ -151,11 +152,8 @@ class PlotVariable():
       print('%s diff at %sZ min: %f, max: %f' %(longname, hourlist[n], np.min(pvar), np.max(pvar)))
       self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
 
-   #clevs = np.arange(-0.5, 0.51, 0.01)
-   #cblevs = np.arange(-0.5, 0.6, 0.1)
-
-    clevs = np.arange(-2.0, 2.1,  0.1)
-    cblevs = np.arange(-2.0, 3.0, 1.0)
+    clevs = np.arange(-10.0, 10.2, 0.2)
+    cblevs = np.arange(-10.0, 12.0, 2.0)
 
     self.gp.set_clevs(clevs)
     self.gp.set_cblevs(cblevs)
@@ -175,23 +173,18 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data'
-  flnm = 'monthly_mean_gfs_4_202112'
 
  #-----------------------------------------------------------------------------------------
-  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'flnm='])
+  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir='])
   for o, a in opts:
     if o in ('--debug'):
       debug = int(a)
     elif o in ('--datadir'):
       datadir = a
-    elif o in ('--flnm'):
-      flnm = a
-    elif o in ('--imgname'):
-      imgname = a
     else:
       assert False, 'unhandled option'
 
  #-----------------------------------------------------------------------------------------
   pv = PlotVariable(debug=debug)
-  pv.process(datadir=datadir, flnm=flnm)
+  pv.process(datadir=datadir)
 

@@ -20,30 +20,24 @@ load "utils.ncl"
 
  u = f->UGRD_P0_L100_GLL0(:,:,:)  ; m/s, (level,lat,lon)
  v = f->VGRD_P0_L100_GLL0(:,:,:)
- t = f->TMP_P0_L100_GLL0(:,:,:)
- ps = f->PRMSL_P0_L101_GLL0(:,:)
 
 ;Divergence function [used later] requires S->N grid order
+
  u  = u(:,::-1,:)  
  v  = v(:,::-1,:)
- t  = t(:,::-1,:)     
- ps =ps(  ::-1,:)       
 
- lat_0 = u@lat_0
- lat_0 = lat_0[::-1]
- u@lat_0 = lat_0
+;----------------------------------------------------------------------
+;Divergence of moisture flux: uv2dvF => global 'fixed' rectilinear grid
 
-;--------------------------------------------------------------------------------------
- div = get_div(u, v)
- dfd = get_dfd(u, v, t)
- vidfd = get_vidfd(u, v, t, ps)
+ div  = uv2dvF_Wrap(u, v)    ; (level,lat,lon)
+ duv@long_name = "Divergence"
+ duv@units     = "1/s"       ; (1/s)
 
-;--------------------------------------------------------------------------------------
- print("-----")
- printVarSummary(vidfd)
- printMinMax(vidfd, 0)
-
- write_div(vidfd, dfd, div, fo)
+ scale = 1.0e6
+ div = scale*div        ; keep meta data                         
+ copy_VarCoords(u, div)
+ div@long_name = "Divergence"
+ div@units     = "1.0e6*1/s"
 
 ;--------------------------------------------------------------------------------------
  wks   = gsn_open_wks(plottype, imgname)        ; send graphics to PNG file
@@ -69,6 +63,16 @@ load "utils.ncl"
 ;--------------------------------------------------------------------------------------
 ;Integrated Divergence of Density Flux Convergence [no scaling]
 
- pvar := vidfd
+ print("-----")
+ print("div")
+ printVarSummary(div)
+ printMinMax(div, 0)
+
+ write_div(div, fo)
+
+;--------------------------------------------------------------------------------------
+;Plot Divergence
+
+ pvar := div(40, :, :)
  plt = gsn_csm_contour_map(wks,pvar,res)
 

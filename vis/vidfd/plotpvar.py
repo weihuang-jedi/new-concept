@@ -11,7 +11,7 @@ import cartopy.crs as ccrs
 
 import tkinter
 import matplotlib
-#matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')
 #---------------------------------------------------------
 def plotit(x, y, z, title, imgname):
   X, Y = np.meshgrid(x, y)
@@ -45,7 +45,7 @@ def plotit(x, y, z, title, imgname):
 
   plt.title(title)
   plt.savefig(imgname)
- #plt.show()
+  plt.show()
 
 #=========================================================================
 class PlotVariable():
@@ -67,7 +67,9 @@ class PlotVariable():
     self.lon = ncf.variables['lon_0'][:]
 
     pvar = ncf.variables['vidfd'][:,:]
+    pvar = pvar
     title = imgname.replace(' ', '_')
+    print('%s min: %f, max: %f' %('vidfd', np.min(pvar), np.max(pvar)))
     plotit(self.lon, self.lat, pvar, title, imgname)
 
     ncf.close()
@@ -76,10 +78,8 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/vis/vidfd/data'
- #flnm = 'monthly_mean_ERA5_VIDFD_00Z_Dec_2021.nc'
- #flnm = 'monthly_mean_ERA5_VIDFD_06Z_Dec_2021.nc'
-  flnm = 'monthly_mean_ERA5_VIDFD_18Z_Dec_2021.nc'
+  datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
+  flnm = 'monthly_mean_gfs_vidfd_12Z_dec_2021.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'flnm='])

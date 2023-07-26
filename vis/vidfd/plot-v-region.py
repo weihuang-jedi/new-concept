@@ -139,7 +139,8 @@ class PlotVariable():
    #meanval, varlist = self.get_mean(varname='PRMSL_P0_L101_GLL0', year=2021, month=12)
    #meanval, varlist = self.get_mean(varname='TMP_P0_L1_GLL0', year=2021, month=12)
    #meanval, varlist = self.get_mean(varname='TMP_P0_L100_GLL0', year=2021, month=12, ndim=3)
-    meanval, varlist = self.get_mean(varname='UGRD_P0_L100_GLL0', year=2021, month=12, ndim=3)
+   #meanval, varlist = self.get_mean(varname='UGRD_P0_L100_GLL0', year=2021, month=12, ndim=3)
+    meanval, varlist = self.get_mean(varname='VGRD_P0_L100_GLL0', year=2021, month=12, ndim=3)
     longname = 'Monthly_Mean_%s' %(self.longname)
 
     hourlist = ['00', '06', '12', '18']

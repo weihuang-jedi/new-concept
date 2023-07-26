@@ -8,7 +8,9 @@ import tkinter
 import matplotlib
 matplotlib.use('TkAgg')
 
-varname = 'U-component_of_wind'
+#varname = 'U-component_of_wind'
+#varname = 'V-component_of_wind'
+varname = 'Divergence'
 
 # create figure
 fig = plt.figure(figsize=(10, 7))

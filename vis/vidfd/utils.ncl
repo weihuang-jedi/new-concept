@@ -448,8 +448,8 @@ begin
 end
 
 ;----------------------------------------------------------------------
-undef("write_dfc")
-procedure write_dfc(vidfd:float, flnm:string)
+undef("write_div")
+procedure write_div(vidfd:float, dfd:float, div:float, flnm:string)
 begin
   system("/bin/rm -f " + flnm)   ; remove any pre-existing file
   ncdf = addfile(flnm, "c")  ; open output netCDF file
@@ -469,6 +469,8 @@ begin
  ; to write the meta data associated with each variable
  ;===================================================================
   ncdf->vidfd = vidfd
+  ncdf->dfd = dfd
+  ncdf->div = div
 
   delete(ncdf)
 end
@@ -552,5 +554,133 @@ begin
   printMinMax(var, 0)
 
   plt = gsn_csm_contour_map(wks,var,res)
+end
+
+;----------------------------------------------------------------------
+undef("get_div")
+function get_div(u:float, v:float)
+begin
+ ;----------------------------------------------------------------------
+  div = uv2dvF_Wrap(u, v)    ; (level,lat,lon)
+  scale = 1.0e6
+  div = scale*div
+  div@long_name = "Divergence"
+  div@units     = "1/s"    ; (1/m)*[(m/s)(g/kg)] => [g/(kg-s)]
+  copy_VarCoords(u, div)
+
+  return div
+end
+
+
+;----------------------------------------------------------------------
+undef("get_dfd")
+function get_dfd(u:float, v:float, t:float)
+begin
+  plev = t&lv_ISBL0                   ; [100000,...,30000] Pa [kg/(m-s2)]
+  plev@units = "Pa"
+
+ ;Vertical levels
+  ptop = plev(0)
+  ptop@units = "Pa"
+
+  rho = t
+  copy_VarCoords(t,rho)
+  rho@units = "kg/kg"
+
+  g = 9.806
+  R = 287.0
+  dims = dimsizes(t)
+  do k = 0, dims(0)-1
+     rho(k,:,:) = plev(k)/(R*t(k,:,:))
+  end do
+
+ ;----------------------------------------------------------------------
+ ;Density flux components at each pressure level
+  urho = u*rho
+  vrho = v*rho
+
+ ;----------------------------------------------------------------------
+  scale = 1.0e6
+
+  duvrho = uv2dvF_Wrap(urho, vrho)    ; (level,lat,lon)
+  duvrho = scale*duvrho
+  copy_VarCoords(u, duvrho)
+  duvrho@long_name = "Divergence of Density Flux"
+  duvrho@units     = "g/(kg-s)"    ; (1/m)*[(m/s)(g/kg)] => [g/(kg-s)]
+  delete(urho)
+  delete(vrho)
+
+  return duvrho
+end
+
+;----------------------------------------------------------------------
+undef("get_vidfd")
+function get_vidfd(u:float, v:float, t:float, ps:float)
+begin
+  plev = t&lv_ISBL0                   ; [100000,...,30000] Pa [kg/(m-s2)]
+  plev@units = "Pa"
+
+ ;Vertical levels
+  ptop = plev(0)
+  ptop@units = "Pa"
+
+  rho = t
+  copy_VarCoords(t,rho)
+  rho@units = "kg/kg"
+
+  g = 9.806
+  R = 287.0
+  dims = dimsizes(t)
+  do k = 0, dims(0)-1
+     rho(k,:,:) = plev(k)/(R*t(k,:,:))
+  end do
+
+ ;----------------------------------------------------------------------
+ ;Layer thickness: ; Pa=>[kg/(m-s2)], (level,lat,lon) 
+ ;Mass weighting: (dp/g) => [Pa/(m/s2)] => (Pa-s2)/m => [kg/(m-s2)][s2/m] =>  (kg/m2)
+ ;Reference: http://www.cgd.ucar.edu/cas/catalog/newbudgets/
+
+  dp = dpres_plevel_Wrap(plev, ps, ptop, 0) ; Pa; layar thickness 
+
+  dimdp = dimsizes(dp)
+
+ ;print(dimdp)
+
+  dpg  = dp/g    
+  dpg@long_name = "Layer Mass Weighting"
+  dpg@units     = "kg/m2"                     ; dp/g, Pa/(m s-2), reduce to kg m-2
+
+ ;----------------------------------------------------------------------
+ ;Density flux components at each pressure level
+
+  urho = u*rho
+  vrho = v*rho
+
+ ;----------------------------------------------------------------------
+  duvrho = uv2dvF_Wrap(urho, vrho)    ; (level,lat,lon)
+  copy_VarCoords(u, duvrho)
+  duvrho@long_name = "Divergence of Density Flux"
+  duvrho@units     = "g/(kg-s)"    ; (1/m)*[(m/s)(g/kg)] => [g/(kg-s)]
+  delete(urho)
+  delete(vrho)
+
+ ;----------------------------------------------------------------------
+ ;Mass weighted integration [sum] of the divergence of density flux
+
+  duvrho_dpg = duvrho*dpg            ;  [g/(kg-s)][kg/m2] => [g/(m2-s)]
+  iduvrho    = dim_sum_n(duvrho_dpg, 0)
+  iduvrho@long_name = "Integrated Mass Wgt DFC"
+  iduvrho@LONG_NAME = "Integrated Mass Weighted Density Flux Convergence"
+  iduvrho@units     = "g/(m2-s)"
+  delete(duvrho_dpg)
+
+  VIDFD =  iduvrho           ; keep meta data
+  VIDFD = -1000.0*VIDFD           ; Note the preceding -1 [negative precedes integration]
+  VIDFD@long_name = "VIDFD"
+  VIDFD@units     = "g/(m2-s)"
+  copy_VarCoords(u(0,:,:), VIDFD)
+  delete(iduvrho)
+
+  return VIDFD
 end
 

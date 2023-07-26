@@ -18,7 +18,9 @@ columns = 1
 #varname='MSL'
 #varname='Temperature'
 #varname='Specific_humidity'
-varname='U-component_of_wind'
+#varname='U-component_of_wind'
+#varname='V-component_of_wind'
+varname='Divergence'
   
 # reading images
 hlist = ['00', '06', '12', '18', '00']
@@ -43,7 +45,7 @@ for n in range(rows*columns):
   plt.axis('off')
  #plt.title(monthlist[n])
   
-imgname = 'panel_Monthly_Mean_%s.png' %(varname)
+imgname = 'panel_06h_diff_Monthly_Mean_%s.png' %(varname)
 plt.tight_layout()
 plt.savefig(imgname)
 plt.show()

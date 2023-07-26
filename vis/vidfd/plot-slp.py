@@ -27,7 +27,8 @@ class GeneratePlot():
 
   def setup_default(self):
    #cmapname = coolwarm, bwr, rainbow, jet, seismic, nipy_spectral
-    self.cmapname = 'jet'
+   #self.cmapname = 'jet'
+    self.cmapname = 'nipy_spectral'
 
    #clevs = np.arange(-100.0, 102.0, 2.0)
    #cblevs = np.arange(-100.0, 110.0, 10.0)

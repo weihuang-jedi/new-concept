@@ -29,14 +29,15 @@ class GeneratePlot():
    #cmapname = coolwarm, bwr, rainbow, jet, seismic, nipy_spectral
     self.cmapname = 'jet'
 
-    self.clevs = np.arange(-10.0, 10.2, 0.2)
-    self.cblevs = np.arange(-10.0, 12.0, 2.0)
+    self.clevs = np.arange(950.0, 1051.0, 1.0)
+    self.cblevs = np.arange(950.0, 1060, 10.0)
 
     self.orientation = 'horizontal'
     self.pad = 0.1
     self.fraction = 0.06
 
-    self.plotarea = [-180, 180, -30, 30]
+    self.plotarea = [-180, 180, -90, 90]
+   #self.plotarea = [-180, 180, -30, 30]
     self.resolution = 'auto'
 
     self.extend = 'both'
@@ -51,8 +52,7 @@ class GeneratePlot():
     plt.title(self.title)
     plt.savefig(self.imgname)
    #if sys.flags.interactive:
-    if(self.debug):
-      plt.show()
+    plt.show()
 
   def set_title(self, title):
     self.title = title
@@ -65,6 +65,9 @@ class GeneratePlot():
 
   def set_cblevs(self, cblevs):
     self.cblevs = cblevs
+
+  def set_cmapname(self, cmapname):
+    self.cmapname = cmapname
 
  #---------------------------------------------------------
   def plotit(self, x, y, z, title, imgname):
@@ -101,27 +104,19 @@ class PlotVariable():
     self.gp = GeneratePlot(debug)
 
  #-----------------------------------------------------------------------------------------
-  def get_mean(self, varname='PRMSL_P0_L101_GLL0', year=2021, month=12, ndim=2):
+  def get_mean(self, year=2021, month=12):
     monyear = '%s%d' %(self.monthname[month], year)
     meanlist = []
     for t in ['00', '06', '12', '18']:
       fullname = '%s/%s/%s_%s00_000.nc' %(self.datadir, monyear, self.flnm, t)
       ncf = nc4.Dataset(fullname, 'r')
-      var = ncf.variables[varname]
-      self.longname = var.long_name
-      self._FillValue = var._FillValue
-      self.missing_value = var.missing_value
-      if(ndim == 2):
-        val = var[:,:]
-      else:
-        val = var[:,:,:]
+      val = ncf.variables['PRATE_P0_L1_GLL0'][:,:]
       meanlist.append(val)
 
       if('00' == t):
         meanval = val
         self.lat = ncf.variables['lat_0'][:]
         self.lon = ncf.variables['lon_0'][:]
-        self.ter = ncf.variables['HGT_P0_L1_GLL0'][:,:]
       else:
         meanval += val
 
@@ -136,37 +131,45 @@ class PlotVariable():
     self.datadir = datadir
     self.flnm = flnm
 
-   #meanval, varlist = self.get_mean(varname='PRMSL_P0_L101_GLL0', year=2021, month=12)
-   #meanval, varlist = self.get_mean(varname='TMP_P0_L1_GLL0', year=2021, month=12)
-   #meanval, varlist = self.get_mean(varname='TMP_P0_L100_GLL0', year=2021, month=12, ndim=3)
-    meanval, varlist = self.get_mean(varname='UGRD_P0_L100_GLL0', year=2021, month=12, ndim=3)
-    longname = 'Monthly_Mean_%s' %(self.longname)
+    meanval, varlist = self.get_mean(year=2021, month=12)
+    longname = 'Monthly_Mean_Precipitation_Rate GFS Dec 2021'
 
     hourlist = ['00', '06', '12', '18']
 
-    for n in range(len(varlist)):
-      title = '%sZ %s' %(hourlist[n], longname)
-      imgname = title.replace(' ', '_')
-      pvar = varlist[n][-1,:,:]
-      print('%s diff at %sZ min: %f, max: %f' %(longname, hourlist[n], np.min(pvar), np.max(pvar)))
-      self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
+    clevs = np.arange(-1.0, 1.01, 0.01)
+    cblevs = np.arange(-1.0, 1.25, 0.25)
 
-   #clevs = np.arange(-0.5, 0.51, 0.01)
-   #cblevs = np.arange(-0.5, 0.6, 0.1)
-
-    clevs = np.arange(-2.0, 2.1,  0.1)
-    cblevs = np.arange(-2.0, 3.0, 1.0)
+   #clevs = np.arange(-2.0, 2.02, 0.02)
+   #cblevs = np.arange(-2.0, 2.5, 0.5)
 
     self.gp.set_clevs(clevs)
     self.gp.set_cblevs(cblevs)
 
+   #scale = 30.0*24.0*3600.0
+    scale = 5000.0
+
+    for n in range(len(varlist)):
+      title = '%sZ_%s' %(hourlist[n], longname)
+      imgname = title.replace(' ', '_')
+      pvar = scale*varlist[n]
+      print('%s diff at %sZ min: %f, max: %f' %(longname, hourlist[n], np.min(pvar), np.max(pvar)))
+      self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
+
+    clevs = np.arange(-0.5,  0.52, 0.02)
+    cblevs = np.arange(-0.5, 0.6, 0.1)
+
+    self.gp.set_clevs(clevs)
+    self.gp.set_cblevs(cblevs)
+    self.gp.set_cmapname('bwr')
+
+    scale = 2.0*scale
     for n in range(len(varlist)):
       nm = n - 1
       if(nm < 0):
         nm = len(varlist) - 1
       title = '%sZ-%sZ_%s' %(hourlist[n], hourlist[nm], longname)
-      imgname = title.replace(' ', '_')
-      pvar = varlist[n][-1,:,:] - varlist[nm][-1,:,:]
+      imgname = title.replace('_', ' ')
+      pvar = scale*(varlist[n] - varlist[nm])
       print('%s diff at %sZ min: %f, max: %f' %(longname, hourlist[n], np.min(pvar), np.max(pvar)))
       self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
 
