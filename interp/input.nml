@@ -1,0 +1,13 @@
+&control_param
+ input_uvq_flnm = "/work2/noaa/gsienkf/weihuang/era5/data/monthly_mean_dec2021_uvq.nc"
+ input_zt_flnm = "/work2/noaa/gsienkf/weihuang/era5/data/monthly_mean_dec2021_zt.nc"
+ input_sfc_flnm = "/work2/noaa/gsienkf/weihuang/era5/data/monthly_mean_dec2021_sealevel.nc"
+ output_flnm = "/work2/noaa/gsienkf/weihuang/era5/data/monthly-mean-dec2021-height-level-fortran.nc"
+ nlon = 1440
+ nlat = 721
+ nlev = 37
+ ntime = 1
+ nalt = 501
+ dz = 50.0
+/
+

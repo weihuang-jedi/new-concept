@@ -13,103 +13,6 @@ begin
 end
 
 ;----------------------------------------------------------------------
-undef("get_half_lat_3d_var")
-function get_half_lat_3d_var(name:string, it:integer, f:file)
-begin
-  fv = short2flt(f->$name$(it,:,:,:))
-
- ;lev = fv&level
- ;lat = fv&latitude
- ;lon = fv&longitude
-
- ;dims = dimsizes(fv)
- ;nlev = dims(0)
- ;nlat = dims(1)
- ;nlon = dims(2)
-
- ;hv = 0.5*(fv(:,nlat-2:0:-1,:) + fv(:,nlat-1:1:-1,:))
- ;hlat = 0.5*(lat(nlat-2:0:-1) + lat(nlat-1:1:-1))
-
- ;hv@_FillValue = fv@_FillValue
- ;hv@missing_value = fv@missing_value
- ;hv@units = fv@units
- ;hv@long_name = fv@long_name
- ;hv@standard_name = fv@standard_name
-
- ;hv!0 = "level"
- ;hv!1 = "latitude"
- ;hv!2 = "longitude"
-
- ;hv&level = lev
- ;hv&latitude = hlat
- ;hv&longitude = lon
-
-  hv = fv(:,::-1,:)
-
-  return hv
-end
-
-;----------------------------------------------------------------------
-undef("convert2halflatgrid")
-function convert2halflatgrid(fv:float)
-begin
- ;lat = fv&latitude
- ;lon = fv&longitude
-
- ;dims = dimsizes(fv)
- ;nlat = dims(0)
- ;nlon = dims(1)
-
- ;hv = 0.5*(fv(nlat-2:0:-1,:) + fv(nlat-1:1:-1,:))
- ;hlat = 0.5*(lat(nlat-2:0:-1) + lat(nlat-1:1:-1))
-
- ;printVarSummary(fv)
- ;printVarSummary(hv)
-
- ;hv@_FillValue = fv@_FillValue
- ;hv@missing_value = fv@missing_value
- ;hv@units = fv@units
- ;hv@long_name = fv@long_name
-
- ;hv!0 = "latitude"
- ;hv!1 = "longitude"
-
- ;hv@latitude = hlat
- ;hv@longitude = lon
-
- ;return hv
-  
-  fv = fv(:,::-1,:)
-  return fv
-end
-
-;----------------------------------------------------------------------
-undef("write_vidfd")
-procedure write_vidfd(vidfd:float, flnm:string)
-begin
-  system("/bin/rm -f " + flnm)   ; remove any pre-existing file
-  ncdf = addfile(flnm, "c")  ; open output netCDF file
-
- ;===================================================================
- ; create global attributes of the file (optional)
- ;===================================================================
-  fAtt               = True            ; assign file attributes
-  fAtt@title         = "NCL calculated Density Flux Divergence"
-  fAtt@source_file   = "Calculated from NCL script: dfd-div"
-  fAtt@Conventions   = "None"
-  fAtt@creation_date = systemfunc ("date")
-  fileattdef( ncdf, fAtt )            ; copy file attributes
-
- ;===================================================================
- ; output variables directly; NCL will call appropriate functions
- ; to write the meta data associated with each variable
- ;===================================================================
-  ncdf->vidfd = vidfd
-
-  delete(ncdf)
-end
-
-;----------------------------------------------------------------------
 undef("get_res")
 function get_res(tstr:string)
 begin
@@ -337,7 +240,6 @@ begin
   return buf
 end
 
-
 ;----------------------------------------------------------------------
 undef("get_valid_index")
 function get_valid_index(index:integer)
@@ -352,102 +254,6 @@ begin
   end do
 
   return id
-end
- 
-;----------------------------------------------------------------------
-undef("get_vidfd")
-function get_vidfd(u:float, v:float, t:float, ps:float)
-begin
-  rho = t
-  copy_VarCoords(t,rho)
-  rho@units = "kg/kg"
-
-  plev = 100.0*tofloat(t&level)
-  plev@units = "Pa"
-
-  ptop = plev(0)
-
-  g = 9.80665          ; m/s2
-  R = 287.0
-  dims = dimsizes(t)
-  do k = 0, dims(0)-1
-    rho(k,:,:) = plev(k)/(R*t(k,:,:))
-  end do
-
- ;----------------------------------------------------------------------
- ;Layer thickness: ; Pa=>[kg/(m-s2)], (level,lat,lon) 
- ;Mass weighting: (dp/g) => [Pa/(m/s2)] => (Pa-s2)/m => [kg/(m-s2)][s2/m] =>  (kg/m2)
- ;Reference: http://www.cgd.ucar.edu/cas/catalog/newbudgets/
-
-  dp = dpres_plevel_Wrap(plev, ps, ptop, 0) ; Pa; layar thickness 
-
-  dimdp = dimsizes(dp)
-
- ;print(dimdp)
-
-  dpg  = dp/g    
-  dpg@long_name = "Layer Mass Weighting"
-  dpg@units     = "kg/m2"                     ; dp/g, Pa/(m s-2), reduce to kg m-2
-
- ;----------------------------------------------------------------------
- ;Density flux components at each pressure level
-
-  urho = u*rho
-  urho@long_name = "Zonal Density Flux [urho]"
-  urho@units = "["+u@units+"]["+rho@units+"]"     ; [m/s][kg/kg]     
- ;copy_VarCoords(u,urho)                        ; (level,lat,lon)
-
-  vrho = v*rho
-  vrho@long_name = "Meridional Density Flux [vrho]"
-  vrho@units = "["+v@units+"]["+rho@units+"]" 
- ;copy_VarCoords(v,vrho)                        ; (level,lat,lon)
-
- ;----------------------------------------------------------------------
- ;Integrated mass weighted moisture flux components
-
-  urho_dpg = urho*dpg                ; mass weighted 'urho'; [m/s][g/kg][kg/m2]=>[m/s][g/kg]
-  iurho    = dim_sum_n(urho_dpg, 0)
-  iurho@long_name = "Integrated Zonal URho [urho*dpg]" 
-  iurho@LONG_NAME = "Sum: Mass Weighted Integrated Zonal Density Flux [urho*dpg]" 
-  iurho@units     = "[m/s][g/kg]"
- ;copy_VarCoords(u(0,:,:), iurho); (lat,lon)
-  delete(urho_dpg)
-
-  vrho_dpg = vrho*dpg                ; mass weighted 'vrho'; [m/s][g/kg][kg/m2]=>[m/s][g/kg] 
-  ivrho    = dim_sum_n(vrho_dpg, 0)
-  ivrho@long_name = "Integrated Meridional VRho [vrho*dpg]" 
-  ivrho@LONG_NAME = "Sum: Mass Weighted Integrated Meridional Density Flux [vrho*dpg]" 
-  ivrho@units     = "[m/s][g/kg]"
- ;copy_VarCoords(v(0,:,:), ivrho); (lat,lon)
-  delete(vrho_dpg)
-
- ;----------------------------------------------------------------------
- ;Divergence of moisture flux: uv2dvF => global 'fixed' rectilinear grid
-
-  duvrho  = uv2dvF_Wrap(urho, vrho)    ; (level,lat,lon)
-  duvrho@long_name = "Divergence of Density Flux"
-  duvrho@units     = "g/(kg-s)"    ; (1/m)*[(m/s)(g/kg)] => [g/(kg-s)]
-  delete(urho)
-  delete(vrho)
-
- ;----------------------------------------------------------------------
- ;Mass weighted integration [sum] of the divergence of moisture flux
- 
-  duvrho_dpg = duvrho*dpg            ;  [g/(kg-s)][kg/m2] => [g/(m2-s)]
-  iduvrho    = dim_sum_n(duvrho_dpg, 0)
-  iduvrho@long_name = "Integrated Mass Wgt DFC" 
-  iduvrho@LONG_NAME = "Integrated Mass Weighted Density Flux Convergence" 
-  iduvrho@units     = "g/(m2-s)"
-  copy_VarCoords(u(0,:,:), iduvrho)      ; (lat,lon)
-  delete(duvrho_dpg)
-
-  VIDFD =  iduvrho           ; keep meta data                         
-  VIDFD = -1000.0*VIDFD           ; Note the preceding -1 [negative precedes integration] 
-  VIDFD@long_name = "VIDFD"
-  VIDFD@units     = "g/(m2-s)"
-  delete(iduvrho)
-
-  return VIDFD
 end
 
 ;----------------------------------------------------------------------
@@ -561,4 +367,148 @@ begin
 
   plt = gsn_csm_contour_map(wks,var,res)
 end
+ 
+;----------------------------------------------------------------------
+undef("get_div")
+function get_div(u:float, v:float)
+begin
+  scale = 1.0e6
+ ;Divergence
+  div = uv2dvF_Wrap(u, v)    ; (level,lat,lon)
+  div = scale*div
+  div@long_name = "Divergence"
+  div@units     = "1/s"       ; 1/s
+  copy_VarCoords(u, div)      ; (lat,lon)
 
+  return div
+end
+ 
+;----------------------------------------------------------------------
+undef("get_dfd")
+function get_dfd(u:float, v:float, t:float)
+begin
+  rho = t
+  rho@units = "kg/kg"
+
+  plev = 100.0*tofloat(t&level)
+  plev@units = "Pa"
+
+  ptop = plev(0)
+
+  g = 9.80665          ; m/s2
+  R = 287.0
+  dims = dimsizes(t)
+  do k = 0, dims(0)-1
+    rho(k,:,:) = plev(k)/(R*t(k,:,:))
+  end do
+
+ ;----------------------------------------------------------------------
+ ;Density flux components at each pressure level
+
+  urho = u*rho
+  vrho = v*rho
+  scale = 1.0e6
+
+  duvrho = uv2dvF_Wrap(urho, vrho)    ; (level,lat,lon)
+  duvrho = scale*duvrho
+  copy_VarCoords(u, duvrho)
+  duvrho@long_name = "Divergence of Density Flux"
+  duvrho@units     = "g/(kg-s)"    ; (1/m)*[(m/s)(g/kg)] => [g/(kg-s)]
+  delete(urho)
+  delete(vrho)
+
+  return duvrho
+end
+ 
+;----------------------------------------------------------------------
+undef("get_vidfd")
+function get_vidfd(u:float, v:float, t:float, ps:float)
+begin
+  rho = t
+  rho@units = "kg/kg"
+
+  plev = 100.0*tofloat(t&level)
+  plev@units = "Pa"
+
+  ptop = plev(0)
+
+  g = 9.80665          ; m/s2
+  R = 287.0
+  dims = dimsizes(t)
+  do k = 0, dims(0)-1
+    rho(k,:,:) = plev(k)/(R*t(k,:,:))
+  end do
+
+ ;----------------------------------------------------------------------
+ ;Layer thickness: ; Pa=>[kg/(m-s2)], (level,lat,lon) 
+ ;Mass weighting: (dp/g) => [Pa/(m/s2)] => (Pa-s2)/m => [kg/(m-s2)][s2/m] =>  (kg/m2)
+ ;Reference: http://www.cgd.ucar.edu/cas/catalog/newbudgets/
+
+  dp = dpres_plevel_Wrap(plev, ps, ptop, 0) ; Pa; layar thickness 
+
+  dimdp = dimsizes(dp)
+
+ ;print(dimdp)
+
+  dpg  = dp/g    
+  dpg@long_name = "Layer Mass Weighting"
+  dpg@units     = "kg/m2"                     ; dp/g, Pa/(m s-2), reduce to kg m-2
+
+ ;----------------------------------------------------------------------
+ ;Density flux components at each pressure level
+
+  urho = u*rho
+  vrho = v*rho
+
+ ;----------------------------------------------------------------------
+  duvrho = uv2dvF_Wrap(urho, vrho)    ; (level,lat,lon)
+  delete(urho)
+  delete(vrho)
+
+ ;----------------------------------------------------------------------
+ ;Mass weighted integration [sum] of the divergence of density flux
+ 
+  duvrho_dpg = duvrho*dpg            ;  [g/(kg-s)][kg/m2] => [g/(m2-s)]
+  iduvrho    = dim_sum_n(duvrho_dpg, 0)
+  iduvrho@long_name = "Integrated Mass Wgt DFC" 
+  iduvrho@LONG_NAME = "Integrated Mass Weighted Density Flux Convergence" 
+  iduvrho@units     = "g/(m2-s)"
+  delete(duvrho_dpg)
+
+  VIDFD =  iduvrho           ; keep meta data                         
+  VIDFD = -1000.0*VIDFD           ; Note the preceding -1 [negative precedes integration] 
+  VIDFD@long_name = "VIDFD"
+  VIDFD@units     = "g/(m2-s)"
+  delete(iduvrho)
+
+  return VIDFD
+end
+
+;----------------------------------------------------------------------
+undef("write_div")
+procedure write_div(vidfd:float, dfd:float, div:float, flnm:string)
+begin
+  system("/bin/rm -f " + flnm)   ; remove any pre-existing file
+  ncdf = addfile(flnm, "c")  ; open output netCDF file
+
+ ;===================================================================
+ ; create global attributes of the file (optional)
+ ;===================================================================
+  fAtt               = True            ; assign file attributes
+  fAtt@title         = "NCL calculated Divergence"
+  fAtt@source_file   = "Calculated from NCL script: calculate-divergence.template"
+  fAtt@Conventions   = "None"
+  fAtt@creation_date = systemfunc ("date")
+  fileattdef( ncdf, fAtt )            ; copy file attributes
+
+ ;===================================================================
+ ; output variables directly; NCL will call appropriate functions
+ ; to write the meta data associated with each variable
+ ;===================================================================
+  ncdf->vidfd = vidfd
+  ncdf->dfd = dfd
+  ncdf->div = div
+
+  delete(ncdf)
+end
+ 

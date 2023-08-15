@@ -18,12 +18,15 @@
 
 #time python interp2height.py --debug=0 \
 #	--datadir=/work2/noaa/gsienkf/weihuang/era5/data \
-#       --upfile=dec2021.nc \
-#       --uvfile=dec2021_uvq.nc \
-#       --sfcfile=dec2021_surfvar.nc
+#	--upfile=era5_monthly_atm_2022.nc \
+#	--sfcfile=era5_monthly_surf_2022.nc \
+#	--outfile=era5_monthly_surf_2022.nc
 
- time python interp2height.py --debug=0 \
-	--datadir=/work2/noaa/gsienkf/weihuang/era5/data \
-	--upfile=era5_monthly_atm_2022.nc \
-	--sfcfile=era5_monthly_surf_2022.nc
+#time python interp2height.py --debug=0 \
+#	--datadir=/work2/noaa/gsienkf/weihuang/era5/data \
+#	--upfile=monthly-mean-pressure-level.nc \
+#	--sfcfile=monthly-mean-surface.nc \
+#	--outfile=monthly-mean-height-level.nc
+
+ time python interp2height_uvq+zt.py --debug=0
 

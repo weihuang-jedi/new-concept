@@ -30,8 +30,6 @@ EOF
    ncl plot-vimfd-${hour}.ncl &
  done
 
- ncl plot-vimfd.ncl &
-
  wait
 
  time_end=$(date +%s)

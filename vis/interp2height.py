@@ -166,7 +166,7 @@ class Interpolate2Height():
           ncout.variables[name][:] = self.time
 
     zv = nczt.variables['z']
-    self.z = zv[:,0,:,:,:]
+    self.z = zv[:,0,:,:,:]/9.806
 
     print('z column:', self.z[0,::-1,0,0])
 
@@ -283,12 +283,13 @@ class Interpolate2Height():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/daily-data'
-  upfile = 'era5_monthly_atm_2022.nc'
-  sfcfile = 'era5_monthly_surf_2022.nc'
+  datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
+  upfile = 'monthly-mean-pressure-level.nc'
+  sfcfile = 'monthly-mean-surface.nc'
+  outfile = 'monthly-mean-height-level.nc'
 
  #-----------------------------------------------------------------------------------------
-  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'upfile=', 'sfcfile='])
+  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'upfile=', 'sfcfile=', 'outfilt='])
   for o, a in opts:
     if o in ('--debug'):
       debug = int(a)
@@ -303,8 +304,8 @@ if __name__== '__main__':
 
  #-----------------------------------------------------------------------------------------
   i2h = Interpolate2Height(debug=debug)
-  ztfile = '%s/%s' %(datadir, upfile)
-  sffile = '%s/%s' %(datadir, sfcfile)
-  outfile = '%s/hl_2022.nc' %(datadir)
-  i2h.process(ztfile=ztfile, sffile=sffile, outfile=outfile)
+  ztflnm = '%s/%s' %(datadir, upfile)
+  sfflnm = '%s/%s' %(datadir, sfcfile)
+  outflnm = '%s/%s' %(datadir, outfile)
+  i2h.process(ztfile=ztflnm, sffile=sfflnm, outfile=outflnm)
 

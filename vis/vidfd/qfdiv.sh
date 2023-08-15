@@ -26,11 +26,9 @@ Dec
 msl
 EOF
    sed -e "s/VARINFO/varinfo_${hour}.txt/g" \
-       plot-vidfd.template > plot-vidfd-${hour}.ncl
-   ncl plot-vidfd-${hour}.ncl &
+       calculate-qfdivergence.template > calculate-qfdivergence-${hour}.ncl
+   ncl calculate-qfdivergence-${hour}.ncl &
  done
-
- ncl plot-vidfd-yearly.ncl &
 
  wait
 

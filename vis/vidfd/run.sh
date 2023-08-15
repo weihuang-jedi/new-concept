@@ -11,13 +11,28 @@
 
  module load slurm ncl
 
- rm -f *.png
-
  time_start=$(date +%s)
 
  cd /work2/noaa/gsienkf/weihuang/era5/vis/vidfd
 
- ncl plot-vidfd.ncl
+#rm -f *.png
+
+ for hour in 00Z 06Z 12Z 18Z
+ do
+cat > varinfo_${hour}.txt << EOF
+${hour}
+Dec
+2021
+msl
+EOF
+   sed -e "s/VARINFO/varinfo_${hour}.txt/g" \
+       plot-vidfd.template > plot-vidfd-${hour}.ncl
+   ncl plot-vidfd-${hour}.ncl &
+ done
+
+ ncl plot-vidfd-yearly.ncl &
+
+ wait
 
  time_end=$(date +%s)
  echo "ncl elapsed Time: $(($time_end-$time_start)) seconds"

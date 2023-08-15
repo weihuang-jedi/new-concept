@@ -11,8 +11,8 @@ import cartopy.crs as ccrs
 
 import tkinter
 import matplotlib
-if sys.flags.interactive:
-  matplotlib.use('TkAgg')
+#if sys.flags.interactive:
+matplotlib.use('TkAgg')
 #---------------------------------------------------------
 def plotit(x, y, z, title, imgname):
   X, Y = np.meshgrid(x, y)
@@ -29,8 +29,11 @@ def plotit(x, y, z, title, imgname):
  #clevs = np.arange(-100.0, 102.0, 2.0)
  #cblevs = np.arange(-100.0, 110.0, 10.0)
 
-  clevs = np.arange(-2.0, 2.1, 0.1)
-  cblevs = np.arange(-2.0, 2.5, 0.5)
+  clevs = np.arange(-0.2, 0.21, 0.01)
+  cblevs = np.arange(-0.2, 0.25, 0.05)
+
+ #clevs = np.arange(-2.0, 2.1, 0.1)
+ #cblevs = np.arange(-2.0, 2.5, 0.5)
 
  #cs = plt.contourf(X, Y, z, cmap ="jet")
   cs = ax.contourf(X, Y, z, levels=clevs, extend='both',
@@ -46,8 +49,8 @@ def plotit(x, y, z, title, imgname):
 
   plt.title(title)
   plt.savefig(imgname)
-  if sys.flags.interactive:
-    plt.show()
+ #if sys.flags.interactive:
+  plt.show()
 
 #=========================================================================
 class PlotVariable():
@@ -80,8 +83,9 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/vis/vimfd/data'
-  flnm = 'monthly_mean_ERA5_VIMFD_18Z_Dec_2021.nc'
+ #datadir = '/work2/noaa/gsienkf/weihuang/era5/vis/vimfd/data'
+  datadir = 'data'
+  flnm = 'monthly_mean_ERA5_VIMFD_00Z_Dec_2021.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'flnm='])

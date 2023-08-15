@@ -33,7 +33,7 @@ load "utils.ncl"
  sfcidx = get_mean_index(sfctime, phour, pmonth, pyear)
 ;print(sfcidx)
  ps = get_monthly_mean(sfcidx, pvarname, fsfc)
- printVarSummary(ps)
+;printVarSummary(ps)
 
 ;----------------------------------------------------------------------
  fiprs = dirname+prsfile
@@ -59,24 +59,22 @@ load "utils.ncl"
  q = q(:,::-1,:)
  ps = ps(::-1,:)
 
+ printVarSummary(u)
+
+;latitude = u&latitude
+;latitude = latitude(::-1)
+;u&latitude = latitude
+
 ;--------------------------------------------------------------------------------------
- VIMFD = cal_mfc(u, v, q, ps)
- VIMFD@LONG_NAME = "Vertical Integrated Moisture Flux Convergence"
+ VIMFD = cal_vimfd(u, v, q, ps)
+ mfd = cal_mfd(u, v, q)
+ div = cal_div(u, v)
 
  tn = "monthly mean ERA5 VIMFD " + phour + " " + pmonth + " " + pyear
  imgname = "monthly_mean_ERA5_VIMFD_" + phour + "_" + pmonth + "_" + pyear
 
- lat = q&latitude
- lon = q&longitude
-
- VIMFD!0 = "latitude"
- VIMFD!1 = "longitude"
-
- VIMFD@latitude = lat
- VIMFD@longitude = lon
-
  flnm = imgname+".nc"
- write_mfc(VIMFD, flnm)
+ write_mfc(VIMFD, mfd, div, flnm)
  printMinMax(VIMFD, True)
 
 ;--------------------------------------------------------------------------------------
@@ -99,19 +97,6 @@ load "utils.ncl"
  res@cnMinLevelValF       = -res@cnMaxLevelValF  ; min level
  res@cnLevelSpacingF      =  0.1                  ; contour interval
  res@tiMainString         = title
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Moisture Flux Convergence [no scaling]
-
- print("-----")
- print("VIMFD")
- printVarSummary(VIMFD)
- printMinMax(VIMFD, 0)
-
- write_mfc(VIMFD, fo)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Moisture Flux Convergence [no scaling]
 
  pvar := VIMFD
  plt = gsn_csm_contour_map(wks,pvar,res)

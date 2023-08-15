@@ -11,7 +11,7 @@ import cartopy.crs as ccrs
 
 import tkinter
 import matplotlib
-#matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')
 #---------------------------------------------------------
 def plotit(x, y, z, title, imgname):
   X, Y = np.meshgrid(x, y)
@@ -25,8 +25,11 @@ def plotit(x, y, z, title, imgname):
  #cmapname = coolwarm, bwr, rainbow, jet, seismic, nipy_spectral
   cmapname = 'jet'
 
- #clevs = np.arange(-100.0, 102.0, 2.0)
+ #clevs = np.arange(-100.0, 105.0, 5.0)
  #cblevs = np.arange(-100.0, 110.0, 10.0)
+
+ #clevs = np.arange(-10.0, 10.2, 0.2)
+ #cblevs = np.arange(-10.0, 12.0, 2.0)
 
   clevs = np.arange(-20.0, 21.0, 1.0)
   cblevs = np.arange(-20.0, 25.0, 5.0)
@@ -45,7 +48,7 @@ def plotit(x, y, z, title, imgname):
 
   plt.title(title)
   plt.savefig(imgname)
- #plt.show()
+  plt.show()
 
 #=========================================================================
 class PlotVariable():
@@ -67,7 +70,9 @@ class PlotVariable():
     self.lon = ncf.variables['longitude'][:]
 
     pvar = ncf.variables['vidfd'][:,:]
-    title = imgname.replace(' ', '_')
+    pvar = pvar
+    print('%s min: %f, max: %f' %('vidfd', np.min(pvar), np.max(pvar)))
+    title = imgname.replace('_', ' ')
     plotit(self.lon, self.lat, pvar, title, imgname)
 
     ncf.close()
@@ -76,9 +81,7 @@ class PlotVariable():
 if __name__== '__main__':
   debug = 0
 
-  datadir = '/work2/noaa/gsienkf/weihuang/era5/vis/vidfd/data'
- #flnm = 'monthly_mean_ERA5_VIDFD_00Z_Dec_2021.nc'
- #flnm = 'monthly_mean_ERA5_VIDFD_06Z_Dec_2021.nc'
+  datadir = 'data'
   flnm = 'monthly_mean_ERA5_VIDFD_18Z_Dec_2021.nc'
 
  #-----------------------------------------------------------------------------------------

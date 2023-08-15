@@ -59,30 +59,20 @@ load "utils.ncl"
  t = t(:,::-1,:)
  ps = ps(::-1,:)
 
+ latitude = u&latitude
+ latitude = latitude(::-1)
+
 ;--------------------------------------------------------------------------------------
- VIDFD = get_vidfd(u, v, t, ps)
-;VIDFD = get_vidfd(u(:,::2,::2), v(:,::2,::2), t(:,::2,::2), ps(::2,::2))
+ div = get_div(u, v)
+ dfd = get_dfd(u, v, t)
+ vidfd = get_vidfd(u, v, t, ps)
 
  tn = "monthly mean ERA5 VIDFD " + phour + " " + pmonth + " " + pyear
  imgname = "monthly_mean_ERA5_VIDFD_" + phour + "_" + pmonth + "_" + pyear
 ;plotit(VIDFD, tn, "x11", imgname)
 
- lat = t&latitude
- lon = t&longitude
-
-;lat = t&latitude(::2,::2)
-;lon = t&longitude(::2,::2)
-
- VIDFD!0 = "latitude"
- VIDFD!1 = "longitude"
-
- VIDFD@latitude = lat
- VIDFD@longitude = lon
-
  flnm = imgname+".nc"
- write_vidfd(VIDFD, flnm)
-
- printMinMax(VIDFD, True)
+ write_div(vidfd, dfd, div, flnm)
 
 ;--------------------------------------------------------------------------------------
  wks   = gsn_open_wks("png", imgname)
@@ -110,52 +100,6 @@ load "utils.ncl"
 
 ;--------------------------------------------------------------------------------------
 ;Integrated Divergence of Density Flux Convergence [no scaling]
- pvar := VIDFD(::4,::4)
- plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Density Flux Convergence [no scaling]
- pvar := VIDFD(::2,::2)
- plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Density Flux Convergence [no scaling]
  pvar := VIDFD
  plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Density Flux Convergence [no scaling]
- pvar := smth9(VIDFD, 0.50, -0.25, False)
- plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Density Flux Convergence [no scaling]
- pvar := smth9(VIDFD, 0.50,  0.25, True)
- plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Density Flux Convergence [no scaling]
-;pvar := smth9(VIDFD, 0.50, -0.25, False)
-;pvar = smth9(pvar, 0.50, -0.25, False)
-;plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Density Flux Convergence [no scaling]
-;pvar := smth9(VIDFD, 0.50,  0.25, True)
-;pvar = smth9(pvar, 0.50,  0.25, True)
-;plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Density Flux Convergence [no scaling]
-;pvar := smth9(VIDFD, 0.50, -0.25, False)
-;pvar = smth9(pvar, 0.50, -0.25, False)
-;pvar = smth9(pvar, 0.50, -0.25, False)
-;plt = gsn_csm_contour_map(wks,pvar,res)
- 
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Density Flux Convergence [no scaling]
-;pvar := smth9(VIDFD, 0.50,  0.25, True)
-;pvar = smth9(pvar, 0.50,  0.25, True)
-;pvar = smth9(pvar, 0.50,  0.25, True)
-;plt = gsn_csm_contour_map(wks,pvar,res)
 

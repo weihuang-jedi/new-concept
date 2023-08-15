@@ -32,8 +32,11 @@ class GeneratePlot():
    #cmapname = coolwarm, bwr, rainbow, jet, seismic, nipy_spectral
     self.cmapname = 'jet'
 
-    self.clevs = np.arange(-2.0, 2.1, 0.1)
-    self.cblevs = np.arange(-2.0, 2.5, 0.5)
+    self.clevs = np.arange(-1.0, 1.01, 0.01)
+    self.cblevs = np.arange(-1.0, 1.25, 0.25)
+
+   #self.clevs = np.arange(-2.0, 2.02, 0.02)
+   #self.cblevs = np.arange(-2.0, 2.5, 0.5)
 
     self.orientation = 'horizontal'
     self.pad = 0.1
@@ -158,11 +161,19 @@ class PlotVariable():
     pvar = ncf.variables['tp']
     fact = 1000.0
 
+    print('pvar:', pvar)
+
+    print('pvar.scale_factor = ', pvar.scale_factor)
+    print('pvar.add_offset = ', pvar.add_offset)
+
+    scale_factor = pvar.scale_factor
+    add_offset = pvar.add_offset
+
     meanval, mean_00, mean_06, mean_12, mean_18 = self.get_mean(pvar, year=2021, month=12)
     longname = pvar.getncattr('long_name')
 
-    imgname = longname
-    title = imgname.replace(' ', '_')
+    title = 'ERA5 Dec 2021 %s' %(longname)
+    imgname = title.replace(' ', '_')
     pvar = fact*meanval
     print('%s min: %f, max: %f' %(longname, np.min(pvar), np.max(pvar)))
     self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
@@ -171,14 +182,14 @@ class PlotVariable():
     hourlist = ['00', '06', '12', '18']
 
     for n in range(len(varlist)):
-      imgname = '%sZ_%s' %(hourlist[n], longname)
-      title = imgname.replace(' ', '_')
+      title = '%sZ_%s' %(hourlist[n], longname)
+      imgname = title.replace(' ', '_')
       pvar = fact*varlist[n]
       print('%s at %sZ min: %f, max: %f' %(longname, hourlist[n], np.min(pvar), np.max(pvar)))
-     #self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
+      self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
 
-    clevs = np.arange(-1.0,  1.02, 0.02)
-    cblevs = np.arange(-1.0, 1.5, 0.5)
+    clevs = np.arange(-0.5,  0.52, 0.02)
+    cblevs = np.arange(-0.5, 0.6, 0.1)
 
     self.gp.set_clevs(clevs)
     self.gp.set_cblevs(cblevs)
@@ -188,8 +199,8 @@ class PlotVariable():
       nm = n - 1
       if(nm < 0):
         nm = len(varlist) - 1
-      imgname = '%sZ-%sZ_%s' %(hourlist[n], hourlist[nm], longname)
-      title = imgname.replace(' ', '_')
+      title = '%sZ-%sZ_%s' %(hourlist[n], hourlist[nm], longname)
+      imgname = title.replace(' ', '_')
       pvar = fact*(varlist[n] - varlist[nm])
       print('%s diff at %sZ min: %f, max: %f' %(longname, hourlist[n], np.min(pvar), np.max(pvar)))
       self.gp.plotit(self.lon, self.lat, pvar, title, imgname)
@@ -202,7 +213,7 @@ if __name__== '__main__':
 
   datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
   flnm = 'monthly-mean-surface.nc'
-  imgname = 'MSL'
+  imgname = 'tp'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'flnm=', 'imgname='])
