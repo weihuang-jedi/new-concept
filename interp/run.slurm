@@ -8,12 +8,14 @@
 #SBATCH --job-name=getkf
 #SBATCH --output=log.tst2
 
- source ~/gnuenv
+ source ~/gdasenv
 
  ulimit -S unlimited
  ulimit -c unlimited
 
  cd /work2/noaa/gsienkf/weihuang/gfs/interp
 
+ make clean
+ make
  time interp.exe
 

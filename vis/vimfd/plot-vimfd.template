@@ -37,7 +37,16 @@ load "utils.ncl"
  q  = q(:,::-1,:)     
  ps =ps(  ::-1,:)       
 
- VIMFD = cal_mfc(u, v, q, ps)
+ VIMFD = cal_vimfd(u, v, q, ps)
+ duvq = cal_mfd(u, v, q)
+ div = cal_div(u, v)
+
+;--------------------------------------------------------------------------------------
+ print("-----")
+ print("VIMFD")
+ printVarSummary(VIMFD)
+ printMinMax(VIMFD, 0)
+ write_mfc(VIMFD, duvq, div, fo)
 
 ;--------------------------------------------------------------------------------------
  wks   = gsn_open_wks(plottype, imgname)        ; send graphics to PNG file
@@ -63,39 +72,6 @@ load "utils.ncl"
 ;--------------------------------------------------------------------------------------
 ;Integrated Divergence of Moisture Flux Convergence [no scaling]
 
- print("-----")
- print("VIMFD")
- printVarSummary(VIMFD)
- printMinMax(VIMFD, 0)
-
- write_mfc(VIMFD, fo)
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Moisture Flux Convergence [no scaling]
-
- pvar := VIMFD(::4,::4)
- plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Moisture Flux Convergence [no scaling]
-
- pvar := VIMFD(::2,::2)
- plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Moisture Flux Convergence [no scaling]
-
  pvar := VIMFD
- plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Moisture Flux Convergence [no scaling]
-
- pvar := smth9(VIMFD, 0.50, -0.25, False)
- plt = gsn_csm_contour_map(wks,pvar,res)
-
-;--------------------------------------------------------------------------------------
-;Integrated Divergence of Moisture Flux Convergence [no scaling]
-
- pvar := smth9(VIMFD, 0.50,  0.25, True)
  plt = gsn_csm_contour_map(wks,pvar,res)
 

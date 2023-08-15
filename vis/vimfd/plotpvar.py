@@ -45,7 +45,7 @@ def plotit(x, y, z, title, imgname):
 
   plt.title(title)
   plt.savefig(imgname)
- #plt.show()
+  plt.show()
 
 #=========================================================================
 class PlotVariable():
@@ -55,7 +55,7 @@ class PlotVariable():
     print('debug: ', debug)
 
  #-----------------------------------------------------------------------------------------
-  def process(self, flnm=None, imgname='ERA5 VIMFD'):
+  def process(self, flnm=None, title='GFS VIMFD'):
     if(os.path.exists(flnm)):
       print('Processing %s' %(flnm))
       ncf = nc4.Dataset(flnm, 'r')
@@ -69,7 +69,7 @@ class PlotVariable():
     pvar = ncf.variables['vimfc'][:,:]
     print('Min %f, max: %f' %(np.min(pvar), np.max(pvar)))
 
-    title = imgname.replace(' ', '_')
+    imgname = title.replace(' ', '_')
     plotit(self.lon, self.lat, pvar, title, imgname)
 
     ncf.close()
@@ -79,7 +79,7 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
-  flnm = 'monthly_mean_gfs_vimfd_18Z_dec_2021.nc'
+  flnm = 'monthly_mean_gfs_vimfd_00Z_dec_2021.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'flnm='])
@@ -96,6 +96,6 @@ if __name__== '__main__':
   filename='%s/%s' %(datadir, flnm)
  #-----------------------------------------------------------------------------------------
   pv = PlotVariable(debug=debug)
-  imgname = flnm.replace('.nc', '')
-  pv.process(flnm=filename, imgname=imgname)
+  title = flnm.replace('.nc', '')
+  pv.process(flnm=filename, title=title)
 

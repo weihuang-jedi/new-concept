@@ -57,7 +57,7 @@ class PlotVariable():
 
     print('debug: ', debug)
 
-    self.dimlist = ('time', 'level', 'latitude', 'longitude')
+    self.dimlist = ('time', 'alt', 'lat', 'lon')
 
  #-----------------------------------------------------------------------------------------
   def process(self, infile=None):
@@ -94,8 +94,9 @@ class PlotVariable():
     npltlvl = int(self.nalt/2)
 
    #for k in range(4):
-   #for k in range(0, self.nalt, 40):
+   #for k in range(0, self.nalt, 20):
     for k in range(0, npltlvl, 40):
+   #for k in range(200, npltlvl, 40):
       var = zv[k,:,:]
  
      #--------------------------------------------------------------------------------
@@ -103,8 +104,6 @@ class PlotVariable():
       for x in [0, 1, 2, 3, 4, 5, 6]:
         print(f"{x} has occurred {op.countOf(z1d, x)} times")
 
-     #title = '%s at hight level: %f' %(varname, self.alt[k])
-     #title = 'gfs Atmospheric System Catalog at 20220116_00Z %d meter' %(int(self.alt[k]+0.5))
       title = 'gfs Atmospheric System Catalog of DEC 2021 %d meter' %(int(self.alt[k]+0.5))
       plotit(self.lon, self.lat, var, title)
 
@@ -115,7 +114,7 @@ if __name__== '__main__':
   debug = 0
 
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
-  infile = 'grad_cate_202112.nc'
+  infile = 'gfs_grad_cate_202112-fortran.nc'
 
  #-----------------------------------------------------------------------------------------
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])

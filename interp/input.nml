@@ -1,11 +1,11 @@
 &control_param
- input_flnm = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/gfs_4_20221201_0000_000.nc"
- output_flnm = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2022/z_gfs_4_20221201_00.nc"
+ input_flnm = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2021/monthly_mean_gfs_4_202112.nc"
+ output_flnm = "/work2/noaa/gsienkf/weihuang/gfs/data/dec2021/monthly_mean_gfs_4_202112-height-level-fortran.nc"
  nlon = 720
  nlat = 361
  nlev = 41
  ntime = 1
- nalt = 251
- dz = 100.0
+ nalt = 501
+ dz = 50.0
 /
 

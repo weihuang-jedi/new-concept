@@ -23,7 +23,7 @@ contains
     real, intent(in) :: z, za, zb, va, vb
     real :: p2z
 
-    p2z = vb + (z-za)*(vb - va)/(zb - za)
+    p2z = va + (z-za)*(vb - va)/(zb - za)
 
   end function p2z
 

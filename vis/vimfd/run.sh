@@ -32,10 +32,6 @@ EOF
    ncl plot-vimfd-${hour}.ncl &
  done
 
- sed -e "s/DATAINFO/datainfo.txt/g" \
-     plot-vimfd.template > plot-vimfd.ncl
- ncl plot-vimfd.ncl &
-
  wait
 
  time_end=$(date +%s)
