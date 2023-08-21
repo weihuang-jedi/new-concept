@@ -17,6 +17,6 @@
 
  module load ncl
 
- ncl mfc_div.ncl
+#ncl mfc_div.ncl
  ncl dfc_div.ncl
 

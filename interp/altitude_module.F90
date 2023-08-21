@@ -139,7 +139,7 @@ contains
    call nc_put1Dvar0(zgrid%ncid, 'lat', zgrid%lat, 1, zgrid%nlat)
 
   !write alt
-   call nc_put1Dvar0(zgrid%ncid, 'alt', zgrid%alt, 1, zgrid%nalt)
+   call nc_put1Ddbl0(zgrid%ncid, 'alt', zgrid%alt, 1, zgrid%nalt)
 
   !write time
   !call nc_put1Dvar0(zgrid%ncid, 'time', zgrid%ftime, 1, zgrid%ntime)

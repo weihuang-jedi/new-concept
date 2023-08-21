@@ -4,7 +4,7 @@
 #SBATCH -n 40
 #SBATCH -t 06:00:00
 #SBATCH -A gsienkf
-#SBATCH --partition=orion
+#SBATCH --partition=bigmem
 #SBATCH --job-name=caldfc
 #SBATCH --output=log.calcate
 

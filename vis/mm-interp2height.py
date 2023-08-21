@@ -172,7 +172,7 @@ class Interpolate2Height():
           ncout.variables[name][:] = self.time
 
     zv = nczt.variables['z']
-    self.z = zv[:,:,:,:]
+    self.z = zv[:,:,:,:]/9.806
    #offset = getattr(zv, 'add_offset')
    #scale_factor = getattr(zv, 'scale_factor')
    #self.z = scale_factor*self.z + offset

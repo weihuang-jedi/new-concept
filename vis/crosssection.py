@@ -105,6 +105,7 @@ class CrossSectionPlot():
       else:
         imagename = self.imagename
       plt.savefig(imagename)
+      plt.show()
       plt.close()
     else:
       plt.show()
@@ -135,9 +136,10 @@ class CrossSectionPlot():
 #--------------------------------------------------------------------------------
 if __name__== '__main__':
   debug = 1
-  output = 0
+  output = 1
   datadir = '/work2/noaa/gsienkf/weihuang/era5/data'
   datafile = '%s/grad_cate_202112.nc' %(datadir)
+ #datafile = '%s/grad_cate_202112.nc.old' %(datadir)
  #datafile = '%s/state_cate_202112.nc' %(datadir)
 
  #datadir = '/work2/noaa/gsienkf/weihuang/era5/daily-data/'
@@ -146,10 +148,10 @@ if __name__== '__main__':
  #title = 'ERA5 Zonal Averaged Annual Atmospheric Catalog'
  #imagename = 'era5_zonal_averaged_annual.png'
 
-  title = 'ERA5 Zonal Averaged Annual Atmospheric Catalog 202112'
+  title = 'ERA5 Zonal Averaged Atmospheric Systems Indices 202112'
   imagename = 'era5_zonal_averaged_202112.png'
 
- #title = 'Zonal Averaged Annual Atmospheric Catalog 2022121500'
+ #title = 'Zonal Averaged Annual Atmospheric Systems Indices 2022121500'
  #imagename = 'zonal_averaged_2022121500.png'
 
   opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'output=', 'datafile=',

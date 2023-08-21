@@ -28,5 +28,7 @@
 #	--sfcfile=monthly-mean-surface.nc \
 #	--outfile=monthly-mean-height-level.nc
 
- time python interp2height_uvq+zt.py --debug=0
+#time python interp2height_uvq+zt.py --debug=0
+
+ time python mm-interp2height.py  --debug=0
 

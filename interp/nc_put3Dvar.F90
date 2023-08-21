@@ -60,7 +60,7 @@ subroutine nc_put3Dvar0(ncid, var_name, v3d, &
    integer, intent(in) :: ncid
    integer, intent(in) :: m1s, m1e, m2s, m2e, m3s, m3e
    character(len=*), intent(in) :: var_name
-   real, dimension(m1s:m1e, m2s:m2e, m3s:m3e), intent(in) :: v3d
+   real*8, dimension(m1s:m1e, m2s:m2e, m3s:m3e), intent(in) :: v3d
 
  ! Variable id
    integer :: varid

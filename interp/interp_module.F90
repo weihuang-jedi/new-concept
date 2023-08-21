@@ -21,9 +21,9 @@ contains
   function p2z(z, za, zb, va, vb)
     implicit none
     real*8, intent(in) :: z, za, zb, va, vb
-    real :: p2z
+    real*8 :: p2z
 
-    p2z = vb + (z-za)*(vb - va)/(zb - za)
+    p2z = vb + (z-zb)*(va - vb)/(za - zb)
 
   end function p2z
 
@@ -42,31 +42,27 @@ contains
     integer                           :: nDims, nVars, &
                                          nGlobalAtts, unlimDimID
     integer :: status, include_parents
-    integer :: i,j,k, jgfs, kgfs, kend
+    integer :: i,j,k, jgfs, kgfs
 
     real*8, parameter :: one = 1.0D0
     real*8, parameter :: zero = 0.0D0
 
    !print *, 'enter interp_p2z'
 
-    allocate(v3d(nlon, nlat, nalt))
+    allocate(v3d(nlon, nlat, zgrid%nalt))
     allocate(p3d(nlon, nlat, pgrid%nlev))
 
     do jgfs = 1, nlat
     j = nlat + 1 - jgfs
     do i = 1, nlon
-    kgfs = nlev
+    kgfs = pgrid%nlev
     do k = 1, zgrid%nalt
-      !print *, 'i,j,k,jgfs,kgfs = ', i,j,k,jgfs,kgfs
-      !print *, 'zgrid%alt(k) = ', zgrid%alt(k)
-      !print *, 'pgrid%z3d(i,jgfs,pgrid%nlev) = ', pgrid%z3d(i,jgfs,pgrid%nlev)
-
        if(zgrid%alt(k) < pgrid%z3d(i,jgfs,pgrid%nlev)) then
          if(pgrid%z3d(i,jgfs,pgrid%nlev) < one) then
            v3d(i,j,k) = pgrid%psl(i,jgfs)
          else
-           v3d(i,j,k) = p2z(zgrid%alt(k), zero, pgrid%z3d(i,jgfs,pgrid%nlev), &
-                            pgrid%psl(i,jgfs), pgrid%lev(nlev))
+           v3d(i,j,k) = p2z(zgrid%alt(k), pgrid%z3d(i,jgfs,pgrid%nlev), zero, &
+                            pgrid%lev(pgrid%nlev), pgrid%psl(i,jgfs))
          end if
        else if(zgrid%alt(k) >= pgrid%z3d(i,jgfs,1)) then
          v3d(i,j,k) = pgrid%lev(1)
@@ -86,9 +82,9 @@ contains
     end do
     end do
 
-    do k = 1, zgrid%nalt
-       print *, 'zgrid%alt(', k, ') = ', zgrid%alt(k)
-    end do
+   !do k = 1, zgrid%nalt
+   !   print *, 'zgrid%alt(', k, ') = ', zgrid%alt(k)
+   !end do
 
    !write p
     call nc_put3Dvar0(zgrid%ncid, 'p', v3d, 1, zgrid%nlon, &
@@ -96,13 +92,17 @@ contains
 
     call check_minmax3d(zgrid%nlon, zgrid%nlat, zgrid%nalt, v3d, 'Pressure')
 
-    do k = 1, zgrid%nalt
-      !print *, 'Altitude: ', zgrid%alt(k)
-       call check_minmax2d(zgrid%nlon, zgrid%nlat, v3d(:,:,k), 'P at level')
-    end do
+   !do k = 1, zgrid%nalt
+   !  !print *, 'Altitude: ', zgrid%alt(k)
+   !   call check_minmax2d(zgrid%nlon, zgrid%nlat, v3d(:,:,k), 'P at level')
+   !end do
 
     deallocate(v3d)
-    deallocate(p3d)
+
+    print *, 'File: ', __FILE__, ', line: ', __LINE__
+    print *, 'Working on t'
+    call p2z4var(pgrid, zgrid, 't', pgrid%t3d, pgrid%t2m)
+    print *, 'Finished t'
 
     include_parents = 0
 
@@ -112,27 +112,32 @@ contains
     status = nf90_open(trim(input_uvq_flnm), nf90_nowrite, fileid)
     call check_status(status)
 
-   !print *, 'File: ', __FILE__, ', line: ', __LINE__
     status = nf90_inquire(fileid, nDims, nVars, &
                           nGlobalAtts, unlimdimid)
     call check_status(status)
 
-    call p2z4var(pgrid, zgrid, 't', pgrid%t3d, pgrid%t2m)
-
    !read u
     call nc_get3Dvar(fileid, 'u', p3d, 1, 1, pgrid%nlon, &
                       1, pgrid%nlat, 1, pgrid%nlev)
+    print *, 'File: ', __FILE__, ', line: ', __LINE__
+    print *, 'Working on u'
     call p2z4var(pgrid, zgrid, 'u', p3d, pgrid%u10)
+    print *, 'Finished u'
 
-   !read u
+   !read v
     call nc_get3Dvar(fileid, 'v', p3d, 1, 1, pgrid%nlon, &
                       1, pgrid%nlat, 1, pgrid%nlev)
+    print *, 'File: ', __FILE__, ', line: ', __LINE__
+    print *, 'Working on v'
     call p2z4var(pgrid, zgrid, 'v', p3d, pgrid%v10)
+    print *, 'Finished v'
 
    !read q
    !call nc_get3Dvar(fileid, 'q', p3d, 1, 1, pgrid%nlon, &
    !                  1, pgrid%nlat, 1, pgrid%nlev)
    !call p2z4var(pgrid, zgrid, 'q', p3d, pgrid%q2m)
+
+    deallocate(p3d)
 
   end subroutine interp_p2z
 
@@ -141,32 +146,32 @@ contains
 
     implicit none
 
-    type(pressuregrid), intent(in)  :: pgrid
-    type(altitudegrid), intent(inout) :: zgrid
+    type(pressuregrid), intent(in) :: pgrid
+    type(altitudegrid), intent(in) :: zgrid
     character(len=*), intent(in) :: z3dname
-    real*8, dimension(nalt, nlat, nlon), intent(in) :: p3d
-    real*8, dimension(nlat, nlon), intent(in) :: p2d
+    real*8, dimension(nlon, nlat, zgrid%nalt), intent(in) :: p3d
+    real*8, dimension(nlon, nlat), intent(in) :: p2d
 
     real*8, dimension(:,:,:), allocatable :: v3d
 
     real*8, parameter :: one = 1.0D0
     real*8, parameter :: zero = 0.0D0
 
-    integer :: i,j,k, jgfs, kgfs, kend
+    integer :: i,j,k, jgfs, kgfs
 
     allocate(v3d(zgrid%nlon, zgrid%nlat, zgrid%nalt))
 
     do jgfs = 1, nlat
     j = nlat + 1 - jgfs
     do i = 1, nlon
-    kgfs = nlev
+    kgfs = pgrid%nlev
     do k = 1, zgrid%nalt
        if(zgrid%alt(k) < pgrid%z3d(i,jgfs,pgrid%nlev)) then
          if(pgrid%z3d(i,jgfs,pgrid%nlev) < one) then
            v3d(i,j,k) = p2d(i,jgfs)
          else
-           v3d(i,j,k) = p2z(zgrid%alt(k), zero, pgrid%z3d(i,jgfs,pgrid%nlev), &
-                            p2d(i,jgfs), p3d(i,jgfs,nlev))
+           v3d(i,j,k) = p2z(zgrid%alt(k), pgrid%z3d(i,jgfs,pgrid%nlev), zero, &
+                            p3d(i,jgfs,pgrid%nlev), p2d(i,jgfs))
          end if
        else if(zgrid%alt(k) >= pgrid%z3d(i,jgfs,1)) then
          v3d(i,j,k) = p3d(i,jgfs,1)
@@ -192,10 +197,10 @@ contains
 
     call check_minmax3d(zgrid%nlon, zgrid%nlat, zgrid%nalt, v3d, trim(z3dname))
 
-   !do k = 1, zgrid%nalt
-   !   print *, 'Altitude: ', zgrid%alt(k)
-   !   call check_minmax2d(zgrid%nlon, zgrid%nlat, v3d(:,:,k), 'P at level')
-   !end do
+    do k = 1, zgrid%nalt
+       print *, 'Altitude: ', zgrid%alt(k)
+       call check_minmax2d(zgrid%nlon, zgrid%nlat, v3d(:,:,k), trim(z3dname))
+    end do
 
     deallocate(v3d)
 

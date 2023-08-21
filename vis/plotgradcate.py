@@ -48,6 +48,7 @@ def plotit(x, y, z, title):
   imagename = '%s.png' %(title.replace(' ', '_'))
   plt.savefig(imagename)
  #plt.show()
+ #plt.close()
 
 #=========================================================================
 class PlotVariable():

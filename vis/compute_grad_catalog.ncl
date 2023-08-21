@@ -131,10 +131,13 @@ begin
  cate = where(opt .gt. 0, 6, cate)
 
 ;----------------------------------------------------------------------
- copy_VarCoords(T, cate)
- cate@long_name = "Catelog"
+ falt = tofloat(alt)
+ fcate = tofloat(cate)
 
- write2file(alt, lat, lon, cate, fo)
+ copy_VarCoords(T, fcate)
+ fcate@long_name = "Catelog"
+
+ write2file(falt, lat, lon, fcate, fo)
 end
 
 ;************************************************

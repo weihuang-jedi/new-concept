@@ -18,10 +18,10 @@ end
  r = 287.0
 
  diri = "/work2/noaa/gsienkf/weihuang/era5/data/"
-;flnm = "hl_monthly_mean_uvtp.nc"
-;ofile = "monthly_mean_df.nc"
- flnm = "hl_uvtp.nc"
- ofile = "df.nc"
+ flnm = "monthly-mean-dec2021-height-level.nc"
+ ofile = "monthly_mean_dec2021_densityFluxConvergence.nc"
+;flnm = "hl_uvtp.nc"
+;ofile = "df.nc"
 
  path = diri+flnm      
 
@@ -157,5 +157,6 @@ end
  VIMFC = -VIMFC           ; Note the preceding -1 [negative precedes integration] 
  VIMFC@long_name = "VIMFC"
 
- write_dfc_div(ialta, lat, lon, VIMFC, duvr_dz, ofile)
+ oflnm = diri+ofile
+ write_dfc_div(ialta, lat, lon, VIMFC, duvr_dz, oflnm)
 

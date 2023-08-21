@@ -11,7 +11,7 @@
 #source ~/intelenv
  source ~/gdasenv
 
- ulimit -S unlimited
+#ulimit -S unlimited
  ulimit -c unlimited
 
  cd /work2/noaa/gsienkf/weihuang/era5/interp

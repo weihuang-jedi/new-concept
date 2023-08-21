@@ -163,14 +163,23 @@ contains
     call nc_get1Dvar0(fileid, 'latitude', pgrid%lat, 1, pgrid%nlat)
 
    !read lev
-    call nc_get1Dvar0(fileid, 'level', pgrid%lev, 1, pgrid%nlev)
+    call nc_get1Ddbl0(fileid, 'level', pgrid%lev, 1, pgrid%nlev)
 
    !read hgt
     call nc_get3Dvar(fileid, 'z', pgrid%z3d, 1, 1, pgrid%nlon, &
                       1, pgrid%nlat, 1, pgrid%nlev)
 
     do k = 1, pgrid%nlev
+    do j = 1, pgrid%nlat
+    do i = 1, pgrid%nlon
+       pgrid%z3d(i,j,k) = pgrid%z3d(i,j,k)/9.806
+    end do
+    end do
+    end do
+
+    do k = 1, pgrid%nlev
        pgrid%lev(k) = 100.0*pgrid%lev(k)
+      !print *, 'pgrid%lev(', k, ')=', pgrid%lev(k), ', pgrid%z3d(', k, ')=', pgrid%z3d(1,1,k)
     end do
 
     call check_minmax3d(pgrid%nlon, pgrid%nlat, pgrid%nlev, pgrid%z3d, 'HGT')
@@ -250,14 +259,8 @@ contains
     call nc_get2Dvar(fileid, 'msl', pgrid%psl, 1, 1, pgrid%nlon, 1, pgrid%nlat)
     call check_minmax2d(pgrid%nlon, pgrid%nlat, pgrid%psl, 'PSL')
 
-    do j = 1, pgrid%nlat
-    do i = 1, pgrid%nlon
-       pgrid%psl(i,j) = pgrid%psl(i,j)
-    end do
-    end do
-
    !read u10
-    call nc_get2Dvar(fileid, 'u10', pgrid%psl, 1, 1, pgrid%nlon, 1, pgrid%nlat)
+    call nc_get2Dvar(fileid, 'u10', pgrid%u10, 1, 1, pgrid%nlon, 1, pgrid%nlat)
     call check_minmax2d(pgrid%nlon, pgrid%nlat, pgrid%u10, 'U10')
 
    !read v10
@@ -265,7 +268,8 @@ contains
     call check_minmax2d(pgrid%nlon, pgrid%nlat, pgrid%v10, 'V10')
 
    !read t2m
-    call nc_get2Dvar(fileid, 't2m', pgrid%t2m, 1, 1, pgrid%nlon, 1, pgrid%nlat)
+   !call nc_get2Dvar(fileid, 't2m', pgrid%t2m, 1, 1, pgrid%nlon, 1, pgrid%nlat)
+    call nc_get2Dvar(fileid, 'skt', pgrid%t2m, 1, 1, pgrid%nlon, 1, pgrid%nlat)
     call check_minmax2d(pgrid%nlon, pgrid%nlat, pgrid%t2m, 'T2m')
 
     deallocate(dimids)
