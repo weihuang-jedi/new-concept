@@ -306,7 +306,7 @@ end
 
 ;----------------------------------------------------------------------
 undef("write2file")
-procedure write2file(alt:float, lat:float, lon:float, cate:float, flnm:string)
+procedure write2file(T:float, P:float, cate:float, flnm:string)
 begin
   system("/bin/rm -f " + flnm)   ; remove any pre-existing file
   ncdf = addfile(flnm, "c")  ; open output netCDF file
@@ -325,9 +325,8 @@ begin
  ; output variables directly; NCL will call appropriate functions
  ; to write the meta data associated with each variable
  ;===================================================================
-  ncdf->alt = alt
-  ncdf->lat = lat
-  ncdf->lon = lon
+  ncdf->T = T
+  ncdf->P = P
 
  ;alt!0 = "alt"
  ;alt&alt = alt
@@ -336,9 +335,9 @@ begin
   cate!0 = "alt"
   cate!1 = "lat"
   cate!2 = "lon"
-  cate&alt = alt
-  cate&lat = lat
-  cate&lon = lon
+  cate&alt = T&alt
+  cate&lat = T&lat
+  cate&lon = T&lon
 
   ncdf->cate = cate
 
@@ -450,7 +449,7 @@ end
 
 ;----------------------------------------------------------------------
 undef("write_dfc")
-procedure write_dfc(duvr:float, iduvr:float, flnm:string)
+procedure write_dfc(vidfd:float, flnm:string)
 begin
   system("/bin/rm -f " + flnm)   ; remove any pre-existing file
   ncdf = addfile(flnm, "c")  ; open output netCDF file
@@ -459,7 +458,7 @@ begin
  ; create global attributes of the file (optional)
  ;===================================================================
   fAtt               = True            ; assign file attributes
-  fAtt@title         = "NCL calculated Density Flux Divergence"
+  fAtt@title         = "NCL calculated Vertical Integrated Density Flux Divergence"
   fAtt@source_file   = "Calculated from NCL script: cal-dfc-div"
   fAtt@Conventions   = "None"
   fAtt@creation_date = systemfunc ("date")
@@ -469,8 +468,7 @@ begin
  ; output variables directly; NCL will call appropriate functions
  ; to write the meta data associated with each variable
  ;===================================================================
-  ncdf->duvr = duvr
-  ncdf->iduvr = iduvr
+  ncdf->vidfd = vidfd
 
   delete(ncdf)
 end

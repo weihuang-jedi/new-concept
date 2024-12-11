@@ -60,7 +60,7 @@ class PlotVariable():
     self.dimlist = ('time', 'alt', 'lat', 'lon')
 
  #-----------------------------------------------------------------------------------------
-  def process(self, infile=None):
+  def process(self, infile=None, level=40):
     if(os.path.exists(infile)):
       print('Processing %s' %(infile))
       ncf = nc4.Dataset(infile, 'r')
@@ -91,21 +91,16 @@ class PlotVariable():
     zv = ncf.variables[varname]
     print('zv column:', zv[:,0,0])
 
-    npltlvl = int(self.nalt/2)
-
-   #for k in range(4):
-   #for k in range(0, self.nalt, 20):
-    for k in range(0, npltlvl, 40):
-   #for k in range(200, npltlvl, 40):
-      var = zv[k,:,:]
+    k = level
+    var = np.average(zv[k-5:k+6,:,:], axis=0)
  
-     #--------------------------------------------------------------------------------
-      z1d = var.flatten()
-      for x in [0, 1, 2, 3, 4, 5, 6]:
-        print(f"{x} has occurred {op.countOf(z1d, x)} times")
+   #--------------------------------------------------------------------------------
+    z1d = var.flatten()
+    for x in [0, 1, 2, 3, 4, 5, 6]:
+      print(f"{x} has occurred {op.countOf(z1d, x)} times")
 
-      title = 'gfs Atmospheric System Catalog of DEC 2021 %d meter' %(int(self.alt[k]+0.5))
-      plotit(self.lon, self.lat, var, title)
+    title = 'gfs Atmospheric System Catalog of DEC 2021 %d meter' %(int(self.alt[k]+0.5))
+    plotit(self.lon, self.lat, var, title)
 
     ncf.close()
 
@@ -115,9 +110,10 @@ if __name__== '__main__':
 
   datadir = '/work2/noaa/gsienkf/weihuang/gfs/data/dec2021'
   infile = 'gfs_grad_cate_202112-fortran.nc'
+  level = 20
 
  #-----------------------------------------------------------------------------------------
-  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile='])
+  opts, args = getopt.getopt(sys.argv[1:], '', ['debug=', 'datadir=', 'infile=', 'level='])
   for o, a in opts:
     if o in ('--debug'):
       debug = int(a)
@@ -125,11 +121,13 @@ if __name__== '__main__':
       datadir = a
     elif o in ('--infile'):
       infile = a
+    elif o in ('--level'):
+      level = int(a)
     else:
       assert False, 'unhandled option'
 
  #-----------------------------------------------------------------------------------------
   pv = PlotVariable(debug=debug)
   infile = '%s/%s' %(datadir, infile)
-  pv.process(infile=infile)
+  pv.process(infile=infile, level=level)
 

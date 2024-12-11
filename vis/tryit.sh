@@ -8,14 +8,21 @@
 #SBATCH --job-name=interp
 #SBATCH --output=log.interp
 
-#source ~/intelenv
-
- export PYTHONPATH=/work2/noaa/gsienkf/weihuang/gfs/vis/pyspharm/Lib:$PYTHONPATH
+ source ~/visenv
 
  ulimit -S unlimited
  ulimit -c unlimited
 
  cd /work2/noaa/gsienkf/weihuang/gfs/vis
 
- time python plotlap.py --debug=0
+ time python plotgradcate.py --debug=0
+
+ for fl in `ls *.png`
+ do
+   convert -trim -geometry 1200x900 +repage -border 8 -bordercolor white \
+	-background white -flatten $fl trim_$fl
+   rm -f $fl
+ done
+
+ tar cvf ~/gfs.tar *.png
 

@@ -59,7 +59,8 @@ class CrossSectionPlot():
     levels = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
     colors = ('magenta', 'navy', 'orange', 'cyan', 'red', 'blue', 'brown')
     X, Y = np.meshgrid(lats, alts)
-    Z = pvar + 0.5
+   #Z = pvar + 0.5
+    Z = pvar + 0.00005
     cs = ax.contourf(X, Y, Z, levels,
                      colors=colors,
                      origin='lower', extend='neither')
@@ -180,6 +181,7 @@ if __name__== '__main__':
   lonshape = lons.shape
   nlon = lonshape[0]
   print('nlon = ', nlon)
+  nlon = 10
   for i in range(0, nlon, 120):
     lon = lons[i]
     if(lon > 180.0):
@@ -198,7 +200,7 @@ if __name__== '__main__':
 
     csp.plot(lats, alts[0:400], cscate[0:400, :], ymax=20000)
 
-  cscate = np.average(cate, axis=2)
+  cscate = np.average(cate, axis=2) + 0.25
   tname = 'ERA5 Zonal Mean Atmospheric Catalog %s' %(title)
   iname = 'era5_zonal_mean_%s.png' %(imagename)
   print('tname = ', tname)

@@ -1,0 +1,367 @@
+load "categorical.ncl"
+
+;----------------------------------------------------------------------
+ info = readinfo("datainfo.txt")
+
+ plottype = info(0)
+ dirname = info(1)
+ finame = info(2)
+ foname = info(3)
+
+ fi = dirname+finame
+ fo = dirname+foname
+
+ print("fi = " + fi)
+ print("fo = " + fo)
+
+ ptop = 1
+ ptop@units = "hPa"
+ g    = 9.80665          ; m/s2
+
+ f = addfile(fi, "r")
+
+ u = f->UGRD_P0_L100_GLL0(:,:,:)  ; m/s, (level,lat,lon)
+ v = f->VGRD_P0_L100_GLL0(:,:,:)
+ q = f->SPFH_P0_L100_GLL0(:,:,:)
+ t = f->TMP_P0_L100_GLL0(:,:,:)
+ ps = f->PRMSL_P0_L101_GLL0(:,:)
+
+;Vertical levels
+ ptop@units = "Pa"
+
+ plev = q&lv_ISBL0                   ; [100000,...,30000] Pa [kg/(m-s2)]
+ plev@units = "Pa"
+
+;Change [kg/kg] to [g/kg]; not necessary: but common units for q
+
+ q    = q*1000            
+ q@units = "g/kg"
+
+;Divergence function [used later] requires S->N grid order
+
+ u  = u(:,::-1,:)  
+ v  = v(:,::-1,:)
+ q  = q(:,::-1,:)     
+ t  = t(:,::-1,:)     
+ ps =ps(  ::-1,:)       
+
+ rho = t
+ copy_VarCoords(t,rho)
+ rho@units = "kg/kg"
+
+ R = 287.0
+ dims = dimsizes(t)
+ do k = 0, dims(0)-1
+    rho(k,:,:) = plev(k)/(R*t(k,:,:))
+ end do
+
+;----------------------------------------------------------------------
+;Layer thickness: ; Pa=>[kg/(m-s2)], (level,lat,lon) 
+;Mass weighting: (dp/g) => [Pa/(m/s2)] => (Pa-s2)/m => [kg/(m-s2)][s2/m] =>  (kg/m2)
+;Reference: http://www.cgd.ucar.edu/cas/catalog/newbudgets/
+
+ dp = dpres_plevel_Wrap(plev, ps, ptop, 0) ; Pa; layar thickness 
+
+ dimdp = dimsizes(dp)
+
+ print(dimdp)
+
+ dpg  = dp/g    
+ dpg@long_name = "Layer Mass Weighting"
+ dpg@units     = "kg/m2"                     ; dp/g, Pa/(m s-2), reduce to kg m-2
+
+;----------------------------------------------------------------------
+;Density flux components at each pressure level
+
+ urho = u*rho
+ urho@long_name = "Zonal Density Flux [urho]"
+ urho@units = "["+u@units+"]["+rho@units+"]"     ; [m/s][g/kg]     
+ copy_VarCoords(u,urho)                        ; (level,lat,lon)
+
+ vrho = v*rho
+ vrho@long_name = "Meridional Density Flux [vrho]"
+ vrho@units = "["+v@units+"]["+rho@units+"]" 
+ copy_VarCoords(v,vrho)                        ; (level,lat,lon)
+
+;----------------------------------------------------------------------
+;Integrated mass weighted moisture flux components
+
+ urho_dpg = urho*dpg                ; mass weighted 'urho'; [m/s][g/kg][kg/m2]=>[m/s][g/kg]
+ iurho    = dim_sum_n(urho_dpg, 0)
+ iurho@long_name = "Integrated Zonal URho [urho*dpg]" 
+ iurho@LONG_NAME = "Sum: Mass Weighted Integrated Zonal Density Flux [urho*dpg]" 
+ iurho@units     = "[m/s][g/kg]"
+ copy_VarCoords(u(0,:,:), iurho); (lat,lon)
+ delete(urho_dpg)
+
+ vrho_dpg = vrho*dpg                ; mass weighted 'vrho'; [m/s][g/kg][kg/m2]=>[m/s][g/kg] 
+ ivrho    = dim_sum_n(vrho_dpg, 0)
+ ivrho@long_name = "Integrated Meridional VRho [vrho*dpg]" 
+ ivrho@LONG_NAME = "Sum: Mass Weighted Integrated Meridional Density Flux [vrho*dpg]" 
+ ivrho@units     = "[m/s][g/kg]"
+ copy_VarCoords(v(0,:,:), ivrho); (lat,lon)
+ delete(vrho_dpg)
+
+;----------------------------------------------------------------------
+;Divergence of moisture flux: uv2dvF => global 'fixed' rectilinear grid
+
+ duvrho  = uv2dvF_Wrap(urho, vrho)    ; (level,lat,lon)
+ duvrho@long_name = "Divergence of Density Flux"
+ duvrho@units     = "g/(kg-s)"    ; (1/m)*[(m/s)(g/kg)] => [g/(kg-s)]
+
+;----------------------------------------------------------------------
+;Mass weighted integration [sum] of the divergence of moisture flux
+
+ duvrho_dpg = duvrho*dpg            ;  [g/(kg-s)][kg/m2] => [g/(m2-s)]
+ iduvrho    = dim_sum_n(duvrho_dpg, 0)
+ iduvrho@long_name = "Integrated Mass Wgt DFC" 
+ iduvrho@LONG_NAME = "Integrated Mass Weighted Density Flux Convergence" 
+ iduvrho@units     = "g/(m2-s)"
+ copy_VarCoords(u(0,:,:), iduvrho)      ; (lat,lon)
+ delete(duvrho_dpg)
+
+ VIDFC =  iduvrho           ; keep meta data                         
+ VIDFC = -VIDFC           ; Note the preceding -1 [negative precedes integration] 
+ VIDFC@long_name = "VIDFC"
+
+;----------------------------------------------------------------------
+;*************************************************
+; plot results
+;*************************************************   
+ scl5  = 1e5                                  ; arbitrary: used for nicer plot values
+ sclab5= "(10~S~-5~N~)"                       ; used later   
+ SCLAB5= "(10~S~5~N~)"           
+
+ scl6  = 1e6  
+ sclab6= "(10~S~-6~N~)"         
+ SCLAB6= "(10~S~6~N~)"         
+
+;----------------------------------------------------------------------
+ plot := new(2,graphic)
+
+ wks   = gsn_open_wks("png","dfc_div")        ; send graphics to PNG file
+;wks   = gsn_open_wks("x11","dfc_div")        ; send graphics to PNG file
+
+;----------------------------------------------------------------------
+;Density Transport [urho, vrho] at a specified pressure level
+
+ res                   = True             ; plot mods desired
+ res@gsnDraw           = False            ; don't draw yet
+ res@gsnFrame          = False            ; don't advance frame yet
+
+ res@cnFillOn          = True             ; turn on color
+ res@cnLinesOn         = False            ; turn off contour lines
+ res@cnLineLabelsOn    = False            ; turn off contour lines
+ res@cnFillPalette     = "ViBlGrWhYeOrRe" ; set White-in-Middle color map
+ res@lbLabelBarOn      = False            ; turn off individual cb's
+ res@mpFillOn          = False            ; turn off map fill
+                                          ; Use a common scale
+ res@cnLevelSelectionMode = "ManualLevels"; manual set levels so lb consistent
+ res@cnMaxLevelValF       =   1.0        ; max level
+ res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
+ res@cnLevelSpacingF      =   0.1      ; contour interval
+
+ LEVP    = 700
+ res@gsnCenterString      = LEVP+"hPa"
+
+ print(" ")
+ print("No 1")
+ print("-----")
+ print("Unweighted Density Flux Components")
+ printVarSummary(urho({LEVP},:,:))
+ printMinMax(urho({LEVP},:,:),0)
+ print("-----")
+ printVarSummary(vrho({LEVP},:,:))
+ printMinMax(vrho({LEVP},:,:),0)
+
+ plot(0) = gsn_csm_contour_map(wks,urho({LEVP},:,:),res)
+ plot(1) = gsn_csm_contour_map(wks,vrho({LEVP},:,:),res)
+
+ resP                     = True                ; modify the panel plot
+ resP@gsnPanelMainString  = "GFS Unweighted Density Flux Components"
+ resP@gsnPanelLabelBar    = True                ; add common colorbar
+ gsn_panel(wks,plot,(/2,1/),resP)               ; now draw as one plot
+
+;--------------------------------------------------------------------------------------
+;Integrated Density Transport [iurho, ivrho]
+
+ delete(res@gsnCenterString)              ; not used for this plot
+ res@cnMaxLevelValF       =  1.0          ; max level
+ res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
+ res@cnLevelSpacingF      =  0.1          ; contour interval
+
+ PURho     = iurho(:,:)                    ; local array: keep meta data
+ PURho     = PURho/scl5                       ; scale for plot
+ PVRho     = ivrho(:,:)                    ; local array: keep meta data
+ PVRho     = PVRho/scl5
+
+ res@gsnRightString  = SCLAB5+" "+iurho@units
+ plot(0) = gsn_csm_contour_map(wks,PURho,res)
+
+ res@gsnRightString  = SCLAB5+" "+ivrho@units
+ plot(1) = gsn_csm_contour_map(wks,PVRho,res)
+
+ print(" ")
+ print("No 2")
+ print("-----")
+ print("Unweighted Density Flux Components")
+ printVarSummary(PURho)
+ printMinMax(PURho, 0)
+ print("-----")
+ printVarSummary(PVRho)
+ printMinMax(PVRho, 0)
+
+ resP@gsnPanelMainString  = "GFS Mass Wgt. Component Density Flux"
+ gsn_panel(wks,plot,(/2,1/),resP)               ; now draw as one plot
+
+ delete( [/PURho, PVRho/] )                   ; no longer needed
+
+;--------------------------------------------------------------------------------------
+;Divergence of Density Flux
+
+ LEVP   = 100
+ PUVRho = duvrho({LEVP},:,:)                    ; keep meta data
+ PUVRho = PUVRho*scl6
+;PUVRho = smth9(PUVRho, 0.50, -0.25, False)
+
+ res@cnMaxLevelValF       = 0.1          ; max level
+ res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
+ res@cnLevelSpacingF      =  0.01         ; contour interval
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvrho@units
+ plot(0) = gsn_csm_contour_map(wks,PUVRho,res)
+
+ print("No 3")
+ print("-----LEVP =" + tostring(LEVP))
+ print("Divergence of Density Flux")
+ printVarSummary(PUVRho)
+ printMinMax(PUVRho, 0)
+
+ LEVP   = 250
+ PUVRho = duvrho({LEVP},:,:)                    ; keep meta data
+ PUVRho = PUVRho*scl6                              ; scale for plot
+;PUVRho = smth9(PUVRho, 0.50, -0.25, False)
+
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvrho@units
+ plot(1) = gsn_csm_contour_map(wks,PUVRho,res)
+
+ resP@gsnPanelMainString  = "GFS Divergence of Density Flux"
+ gsn_panel(wks,plot,(/2,1/),resP)                ; now draw as one plot
+
+ print("-----LEVP =" + tostring(LEVP))
+ print("Divergence of Density Flux")
+ printVarSummary(PUVRho)
+ printMinMax(PUVRho, 0)
+
+ delete(PUVRho)                                        ; no longer needed
+ delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot 
+
+;--------------------------------------------------------------------------------------
+;Divergence of Density Flux
+
+ res@cnMaxLevelValF       =  0.1          ; max level
+ res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
+ res@cnLevelSpacingF      =  0.01         ; contour interval
+
+ LEVP   = 500
+ PUVRho = duvrho({LEVP},:,:)                    ; keep meta data
+ PUVRho = PUVRho*scl6
+;PUVRho = smth9(PUVRho, 0.50, -0.25, False)
+
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvrho@units
+ plot(0) = gsn_csm_contour_map(wks,PUVRho,res)
+
+ print("No 4")
+ print("-----LEVP =" + tostring(LEVP))
+ print("Divergence of Density Flux")
+ printVarSummary(PUVRho)
+ printMinMax(PUVRho, 0)
+
+ LEVP   = 700
+ PUVRho = duvrho({LEVP},:,:)                    ; keep meta data
+ PUVRho = PUVRho*scl6                              ; scale for plot
+;PUVRho = smth9(PUVRho, 0.50, -0.25, False)
+
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvrho@units
+ plot(1) = gsn_csm_contour_map(wks,PUVRho,res)
+
+ print("-----LEVP =" + tostring(LEVP))
+ print("Divergence of Density Flux")
+ printVarSummary(PUVRho)
+ printMinMax(PUVRho, 0)
+
+ resP@gsnPanelMainString  = "GFS Divergence of Density Flux"
+ gsn_panel(wks,plot,(/2,1/),resP)                ; now draw as one plot
+
+ delete(PUVRho)                                        ; no longer needed
+ delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot
+
+;--------------------------------------------------------------------------------------
+;Divergence of Density Flux
+
+ res@cnMaxLevelValF       =  0.1          ; max level
+ res@cnMinLevelValF       = -res@cnMaxLevelValF     ; min level
+ res@cnLevelSpacingF      =  0.01         ; contour interval
+
+ LEVP   = 850
+ PUVRho = duvrho({LEVP},:,:)                    ; keep meta data
+ PUVRho = PUVRho*scl6
+;PUVRho = smth9(PUVRho, 0.50, -0.25, False)
+
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvrho@units
+ plot(0) = gsn_csm_contour_map(wks,PUVRho,res)
+
+ print("No 5")
+ print("-----LEVP =" + tostring(LEVP))
+ print("Divergence of Density Flux")
+ printVarSummary(PUVRho)
+ printMinMax(PUVRho, 0)
+
+ LEVP   = 950
+ PUVRho = duvrho({LEVP},:,:)                    ; keep meta data
+ PUVRho = PUVRho*scl6                              ; scale for plot
+;PUVRho = smth9(PUVRho, 0.50, -0.25, False)
+
+ res@gsnCenterString = LEVP+"hPa"
+ res@gsnRightString  = sclab6+" "+duvrho@units
+ plot(1) = gsn_csm_contour_map(wks,PUVRho,res)
+
+ print("-----LEVP =" + tostring(LEVP))
+ print("Divergence of Density Flux")
+ printVarSummary(PUVRho)
+ printMinMax(PUVRho, 0)
+
+ resP@gsnPanelMainString  = "GFS Divergence of Density Flux"
+ gsn_panel(wks,plot,(/2,1/),resP)                ; now draw as one plot
+
+ delete(PUVRho)                                        ; no longer needed
+ delete([/res@gsnCenterString, res@gsnRightString/]) ; not used in next plot
+
+;--------------------------------------------------------------------------------------
+;Integrated Divergence of Density Flux Convergence [no scaling]
+
+ print("No 6")
+ print("-----")
+ print("VIDFC")
+ printVarSummary(VIDFC)
+ printMinMax(VIDFC, 0)
+;VIDFC = smth9(VIDFC, 0.50, -0.25, False)
+ VIDFC = 1000.0*VIDFC
+ VIDFC@units = "mg/(m2-s)"
+
+ res@gsnDraw              = True
+ res@gsnFrame             = True
+ res@lbLabelBarOn         = True        
+
+;res@cnFillPalette        = "cmp_flux"
+ res@cnMaxLevelValF       =  10.0                 ; min level
+ res@cnMinLevelValF       = -res@cnMaxLevelValF  ; min level
+ res@cnLevelSpacingF      =  1.0                 ; contour interval
+ res@tiMainString         = "GFS VIDFC"
+
+ plt = gsn_csm_contour_map(wks,VIDFC ,res)
+

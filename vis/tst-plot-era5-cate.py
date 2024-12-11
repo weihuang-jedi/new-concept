@@ -94,7 +94,7 @@ class PlotVariable():
     npltlvl = int(self.nalt/2)
 
     k = level
-    var = zv[k,:,:]
+    var = np.average(zv[k-5:k+6,:,:], axis=0)
  
    #--------------------------------------------------------------------------------
     z1d = var.flatten()
