@@ -24,6 +24,7 @@ module altitude_module
                                               dimid_time
      integer                               :: nlon, nlat, nalt, ntime
      real,    dimension(:),    allocatable :: lon, lat, alt, ftime
+     real,    dimension(:, :), allocatable :: ter
      real                                  :: dz
   end type altitudegrid
 
@@ -39,7 +40,7 @@ contains
     type(altitudegrid), intent(out) :: zgrid
     type(pressuregrid), intent(in)  :: pgrid
 
-    integer :: k
+    integer :: i, j, k
 
    !print *, 'enter initialize_altitude_grid'
 
@@ -50,6 +51,7 @@ contains
     allocate(zgrid%lon(nlon))
     allocate(zgrid%lat(nlat))
     allocate(zgrid%alt(nalt))
+    allocate(zgrid%ter(nlon, nlat))
 
     do k = 1, nalt
       zgrid%alt(k) = real(k-1)*dz
@@ -57,8 +59,11 @@ contains
     end do
 
     zgrid%lon(:) = pgrid%lon(:)
-    do k = 1, nlat
-       zgrid%lat(k) = pgrid%lat(nlat+1-k)
+    do j = 1, nlat
+       zgrid%lat(j) = pgrid%lat(nlat+1-j)
+       do i = 1, nlon
+          zgrid%ter(i, j) = pgrid%ter(i, nlat+1-j)
+       end do
     end do
 
     zgrid%filename = output_flnm
@@ -141,6 +146,9 @@ contains
   !write time
   !call nc_put1Dvar0(zgrid%ncid, 'time', zgrid%ftime, 1, zgrid%ntime)
 
+  !write ter
+   call nc_put2Dvar0(zgrid%ncid, 'ter', zgrid%ter, 1, zgrid%nlon, 1, zgrid%nlat)
+
   !rc =  nf90_close(zgrid%ncid)
   !print *, 'nf90_close rc = ', rc
   !print *, 'nf90_noerr = ', nf90_noerr
@@ -209,6 +217,17 @@ contains
   !                   "time Coordinate", &
   !                   "forward", &
   !                   "center" )
+
+   dimids(1) = zgrid%dimid_lon
+   dimids(2) = zgrid%dimid_lat
+   nd = 2
+!--Field 0, ter
+   call nc_putAttr(zgrid%ncid, nd, dimids, NF90_REAL, &
+                   "ter", &
+                   "Terrain Height", &
+                   "m", &
+                   "lat lon", &
+                   missing_real)
 
    dimids(1) = zgrid%dimid_lon
    dimids(2) = zgrid%dimid_lat

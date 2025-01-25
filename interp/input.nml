@@ -1,11 +1,11 @@
 &control_param
- input_flnm = "/work2/noaa/gsienkf/weihuang/gfs/data/jul2022/monthly_mean_gfs_4_202207.nc"
- output_flnm = "/work2/noaa/gsienkf/weihuang/gfs/data/jul2022/monthly_mean_gfs_4_202207-height-level-fortran.nc"
- nlon = 720
- nlat = 361
- nlev = 41
+ input_flnm = "/contrib/Wei.Huang/src/mlweather/gfsdata/gfs_3_20241226_0000_000.nc"
+ output_flnm = "/contrib/Wei.Huang/src/mlweather/gfsdata/height-level-gfs_3_20241226_0000_000.nc"
+ nlon = 360
+ nlat = 181
+ nlev = 51
  ntime = 1
- nalt = 501
- dz = 50.0
+ nalt = 51
+ dz = 500.0
 /
 
